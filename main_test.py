@@ -26,7 +26,7 @@ def play_sfx():
     global mian_music_pos_g
     try:
         # 主音乐淡出
-        mian_music_pos_g += (pygame.mixer.music.get_pos() + FADE_DURATION)/1000.0
+        mian_music_pos_g += (pygame.mixer.music.get_pos() + FADE_DURATION / 5) / 1000.0
         pygame.mixer.music.fadeout(FADE_DURATION)
         
         # 加载并播放音效
@@ -39,7 +39,7 @@ def play_sfx():
     finally:
         # 恢复主音乐播放
         pygame.mixer.music.load(MAIN_MUSIC)
-        pygame.mixer.music.play(start=mian_music_pos_g)
+        pygame.mixer.music.play(start=mian_music_pos_g, fade_ms=FADE_DURATION)
 
 
 # 按键监听回调

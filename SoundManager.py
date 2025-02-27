@@ -64,3 +64,15 @@ play_main_music()
 with keyboard.Listener(on_press=on_press) as listener:
     print(f"程序运行中 | 主音乐循环中 | 按 {TRIGGER_KEY} 触发插播")
     listener.join()
+
+
+class SoundManager:
+    def __init__(self):
+        pass
+    '''
+    description: 插入一条语音播报，立即播放
+    param {*} self、announcement：语音播报音频文件
+    return {*}
+    '''    
+    def insVoiceAnnouncement(self, announcement):
+        pass

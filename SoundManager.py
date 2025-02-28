@@ -71,8 +71,8 @@ class SoundManager:
         pass
     '''
     description: 插入一条语音播报，立即播放
-    param {*} self、announcement：语音播报音频文件
+    param {*} self、annc：语音播报音频文件
     return {*}
     '''    
-    def insVoiceAnnouncement(self, announcement):
+    def insVoiceAnnc(self, annc):
         pass

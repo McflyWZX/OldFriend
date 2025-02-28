@@ -34,7 +34,7 @@ class Item(Control):
 
     def onSelect(self):
         audio = self.UI_mgr.TTS_mgr.tts()
-        self.UI_mgr.soundMgr.insVoiceAnnouncement(audio)
+        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
 
     def onEnter(self):
         pass

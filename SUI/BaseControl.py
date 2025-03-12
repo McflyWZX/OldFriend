@@ -53,6 +53,7 @@ class ItemList(Control):
         super().__init__(UI_mgr)
         self.title = title
         self.items:list[Item] = []
+        self.index = 0
 
     def onSelect(self):
         super().onSelect()
@@ -64,6 +65,22 @@ class ItemList(Control):
         # 将SUI当前正在浏览的列表替换  
         self.UI_mgr.enterVisitList(self)
         self.items[0].onSelect()
+
+    '''
+    description: 获取自己的items，默认直接返回，上层可根据需要重构
+    '''    
+    def __getItems(self):
+        return self.items
+
+    def __keyNext(self):
+        self.index += 1
+        self.index %= len(self.__getItems())
+        self.items[self.index].onSelect()
+
+    def __keyLast(self):
+        self.index += (-1 + len(self.__getItems()))
+        self.index %= len(self.items)
+        self.items[self.index].onSelect()
 
 
 class QuickButton(Control):

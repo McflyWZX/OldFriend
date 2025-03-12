@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-09 22:27:33
+LastEditTime: 2025-03-13 01:25:30
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -41,11 +41,11 @@ class SoundAlbum(BaseControl.Item):
         self.lastPlayIndex = 0
 
     def onSelect(self):
-        audio = self.UI_mgr.TTS_mgr.tts(self.title)
-        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+        super().onSelect()
+        print(' ' + self.title)
 
     def onEnter(self):
-        pass
+        super().onEnter()
 
 '''
 description: 声音内容，包含具体的音源ID，当点击时替换主音乐并更新SoundAlbum状态

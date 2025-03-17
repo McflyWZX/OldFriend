@@ -3,18 +3,18 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-08 16:22:31
+LastEditTime: 2025-03-18 00:20:37
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
 '''
-from ..SoundManager import SoundManager
-from ..TTS_manager import TTS_manager
+from SoundManager import SoundManager
+from TTS_manager import TTS_manager
 from pynput import keyboard
 from typing import Callable
 from pynput.keyboard import Key
 import copy
-import BaseControl
+from SUI.BaseControl import *
 
 '''
 description: 提供SUI的创建和管理功能，负责SUI内部控件数据流传递.
@@ -22,7 +22,7 @@ description: 提供SUI的创建和管理功能，负责SUI内部控件数据流�
              activity的按键功能挂接函数
 '''
 class SUI:
-    def __init__(self, soundMgr:SoundManager, TTS_mgr:TTS_manager):
+    def __init__(self, soundMgr:SoundManager, TTS_mgr: TTS_manager):
         self.soundMgr = soundMgr
         self.TTS_mgr = TTS_mgr
         self.__activity = None
@@ -51,7 +51,7 @@ class SUI:
         print('bbb')
         print(self)
 
-    def changeVisitTo(self, activity: BaseControl.Control):
+    def changeVisitTo(self, activity: Control):
         self.__activity = activity
         self.__setKeyMap(activity)
 

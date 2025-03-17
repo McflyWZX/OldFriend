@@ -2,22 +2,24 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-08 16:43:44
-FilePath: \OldFriend\SUI\BaseControl.py
+LastEditTime: 2025-03-18 00:38:52
+FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
 '''
-from ..SoundManager import SoundManager
-from ..TTS_manager import TTS_manager
+from typing import TYPE_CHECKING
+from SoundManager import SoundManager
+from TTS_manager import TTS_manager
 from typing import Callable
 from pynput.keyboard import Key
-import Manager
+if TYPE_CHECKING:
+    from SUI.Manager import SUI
 
 '''
 description: 交互式控件的基类
 '''
 class Control:
-    def __init__(self, UI_mgr: Manager.SUI):
+    def __init__(self, UI_mgr: 'SUI'):
         self.UI_mgr = UI_mgr;
         self.keyMap: dict[Key, Callable[[], None]] = None
 
@@ -34,7 +36,7 @@ class Control:
 description: 表项控件，当被选中时，默认播报标项名字
 '''
 class Item(Control):
-    def __init__(self, UI_mgr: Manager.SUI, title='未知栏目'):
+    def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
         super().__init__(UI_mgr)
         self.title = title
 
@@ -49,11 +51,12 @@ class Item(Control):
 description: 表项列表控件，当被选中时，默认播报列表的名字，拥有一个管理标项的list
 '''
 class ItemList(Control):
-    def __init__(self, UI_mgr: Manager.SUI, title='未知栏目'):
+    def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
         super().__init__(UI_mgr)
         self.title = title
         self.items:list[Item] = []
         self.index = 0
+        # self.keyMap[Key.right]
 
     def onSelect(self):
         super().onSelect()
@@ -84,7 +87,7 @@ class ItemList(Control):
 
 
 class QuickButton(Control):
-    def __init__(self, UI_mgr: Manager.SUI, title='未知栏目'):
+    def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
         super().__init__(UI_mgr)
         self.title = title
 

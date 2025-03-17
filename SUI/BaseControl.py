@@ -56,7 +56,9 @@ class ItemList(Control):
         self.title = title
         self.items:list[Item] = []
         self.index = 0
-        # self.keyMap[Key.right]
+        self.keyMap[Key.right] = self.__keyNext
+        self.keyMap[Key.left] = self.__keyLast
+        self.keyMap[Key.enter] = self.__keyEnter
 
     def onSelect(self):
         super().onSelect()
@@ -84,6 +86,9 @@ class ItemList(Control):
         self.index += (-1 + len(self.__getItems()))
         self.index %= len(self.items)
         self.items[self.index].onSelect()
+
+    def __keyEnter(self):
+        self.items[self.index].onEnter()
 
 
 class QuickButton(Control):

@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-18 00:38:52
+LastEditTime: 2025-03-19 22:42:28
 FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
@@ -11,7 +11,7 @@ from typing import TYPE_CHECKING
 from SoundManager import SoundManager
 from TTS_manager import TTS_manager
 from typing import Callable
-from pynput.keyboard import Key
+from pynput.keyboard import Key, KeyCode
 if TYPE_CHECKING:
     from SUI.Manager import SUI
 
@@ -21,7 +21,7 @@ description: 交互式控件的基类
 class Control:
     def __init__(self, UI_mgr: 'SUI'):
         self.UI_mgr = UI_mgr;
-        self.keyMap: dict[Key, Callable[[], None]] = None
+        self.keyMap: dict[KeyCode, Callable[[], None]] = None
 
     def onSelect(self):
         pass
@@ -92,10 +92,17 @@ class ItemList(Control):
 
 
 class QuickButton(Control):
-    def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
+    def __init__(self, UI_mgr: 'SUI', key: KeyCode, title='未知栏目', control: Control=None, action: Callable[['SUI'], bool]=None):
         super().__init__(UI_mgr)
         self.title = title
+        self.control = control
+        self.action = action
+        self.keyMap[key] = self.__onAction
 
-    def onEnter(self):
+    def __onAction(self):
         audio = self.UI_mgr.TTS_mgr.tts(self.title)
         self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+        if self.action is not None:
+            self.action(self.UI_mgr)
+        if self.control is not None:
+            self.control.onEnter()

@@ -11,4 +11,4 @@ class TTS_manager:
     def __init__(self):
         pass
     def tts(self, txt):
-        pass
+        return txt

@@ -15,4 +15,4 @@ class SoundManager:
     return {*}
     '''    
     def insVoiceAnnc(self, annc):
-        pass
+        print(annc)

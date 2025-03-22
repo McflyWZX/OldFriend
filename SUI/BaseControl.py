@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-22 15:22:43
+LastEditTime: 2025-03-22 18:45:56
 FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
@@ -19,12 +19,14 @@ if TYPE_CHECKING:
 description: 交互式控件的基类
 '''
 class Control:
-    def __init__(self, UI_mgr: 'SUI'):
-        self.UI_mgr = UI_mgr;
+    def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
+        self.UI_mgr = UI_mgr
+        self.title = title
         self.keyMap: dict[KeyCode, Callable[[], None]] = {}
 
     def onSelect(self):
-        pass
+        audio = self.UI_mgr.TTS_mgr.tts(self.title)
+        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
 
     def onEnter(self):
         pass
@@ -37,12 +39,10 @@ description: 表项控件，当被选中时，默认播报标项名字
 '''
 class Item(Control):
     def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
-        super().__init__(UI_mgr)
-        self.title = title
+        super().__init__(UI_mgr, title)
 
     def onSelect(self):
-        audio = self.UI_mgr.TTS_mgr.tts(self.title)
-        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+        super().onSelect()
         print('选中了：%s'%self.title)
 
     def onEnter(self):
@@ -54,8 +54,7 @@ description: 表项列表控件，当被选中时，默认播报列表的名字�
 '''
 class ItemList(Control):
     def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
-        super().__init__(UI_mgr)
-        self.title = title
+        super().__init__(UI_mgr, title)
         self.items:list[Item] = []
         self.index = 0
         self.keyMap[Key.right] = self.__keyNext

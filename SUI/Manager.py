@@ -43,9 +43,9 @@ class SUI:
     # 按键监听回调
     def onKeyPress(self, key):
         if key in self.keyMap.keys():
-            print('key mapped!')
+            # print('key mapped!')
             self.keyMap[key]()
-        print(key)
+        # print(key)
 
     def changeVisitTo(self, activity: Control):
         self.__activity = activity

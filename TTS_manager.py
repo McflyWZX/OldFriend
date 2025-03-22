@@ -10,5 +10,5 @@ Description: TTS管理模块，黑盒化文字键值转语音，内部基于记�
 class TTS_manager:
     def __init__(self):
         pass
-    def tts(self):
+    def tts(self, txt):
         pass

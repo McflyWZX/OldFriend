@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-19 22:42:28
+LastEditTime: 2025-03-22 15:22:43
 FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
@@ -21,7 +21,7 @@ description: 交互式控件的基类
 class Control:
     def __init__(self, UI_mgr: 'SUI'):
         self.UI_mgr = UI_mgr;
-        self.keyMap: dict[KeyCode, Callable[[], None]] = None
+        self.keyMap: dict[KeyCode, Callable[[], None]] = {}
 
     def onSelect(self):
         pass
@@ -43,8 +43,10 @@ class Item(Control):
     def onSelect(self):
         audio = self.UI_mgr.TTS_mgr.tts(self.title)
         self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+        print('选中了：%s'%self.title)
 
     def onEnter(self):
+        print('进入了：%s'%self.title)
         pass
 
 '''
@@ -62,14 +64,17 @@ class ItemList(Control):
 
     def onSelect(self):
         super().onSelect()
+        print('选中了：%s'%self.title)
 
     def onEnter(self):
         if len(self.items) == 0:
             # TODO: 播放“当前分类无内容”
+            print('当前分类无内容')
             return
         # 将SUI当前正在浏览的列表替换  
-        self.UI_mgr.enterVisitList(self)
+        self.UI_mgr.changeVisitTo(self)
         self.items[0].onSelect()
+        print('进入了：%s'%self.title)
 
     '''
     description: 获取自己的items，默认直接返回，上层可根据需要重构
@@ -90,19 +95,3 @@ class ItemList(Control):
     def __keyEnter(self):
         self.items[self.index].onEnter()
 
-
-class QuickButton(Control):
-    def __init__(self, UI_mgr: 'SUI', key: KeyCode, title='未知栏目', control: Control=None, action: Callable[['SUI'], bool]=None):
-        super().__init__(UI_mgr)
-        self.title = title
-        self.control = control
-        self.action = action
-        self.keyMap[key] = self.__onAction
-
-    def __onAction(self):
-        audio = self.UI_mgr.TTS_mgr.tts(self.title)
-        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
-        if self.action is not None:
-            self.action(self.UI_mgr)
-        if self.control is not None:
-            self.control.onEnter()

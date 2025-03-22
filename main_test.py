@@ -2,11 +2,12 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-24 22:41:28
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-08 16:43:06
+LastEditTime: 2025-03-22 15:35:39
 FilePath: \GitClone\OldFriend\main_test.py
 Description: OldFriend技术测试场
 '''
 from SUI.Manager import SUI
+from SUI.Controls import *
 # import pygame
 # from pynput import keyboard
 # import threading
@@ -65,5 +66,13 @@ from SUI.Manager import SUI
 # with keyboard.Listener(on_press=on_press) as listener:
 #     print(f"程序运行中 | 主音乐循环中 | 按 {TRIGGER_KEY} 触发插播")
 #     listener.join()
-
-sui = SUI(None, None)
+soundManager = SoundManager()
+ttsManager = TTS_manager()
+sui = SUI(soundManager, ttsManager)
+newsReport = SoundAlbum(sui, '新闻联播', 31923706)
+morningCaffe = SoundAlbum(sui, '声动早咖啡', 51076156)
+news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe])
+home = Menu(sui, '主页', localMenu=[news])
+sui.changeVisitTo(home)
+while True:
+    pass

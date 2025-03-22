@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-18 00:22:33
+LastEditTime: 2025-03-22 13:44:43
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -23,6 +23,8 @@ class Menu(ItemList):
         super().__init__(UI_mgr, title)
         self.localMenu = localMenu
         self.remoteMenuUrl = remoteMenuUrl
+        self.items += self.getLocalMenu()
+        self.items += self.getRemoteMenu()
 
     def getLocalMenu(self):
         return self.localMenu
@@ -61,3 +63,19 @@ class SoundContent(Item):
 
     def onEnter(self):
         pass
+
+class QuickButton(Control):
+    def __init__(self, UI_mgr: 'SUI', key: KeyCode, title='未知栏目', control: Control=None, action: Callable[['SUI'], bool]=None):
+        super().__init__(UI_mgr)
+        self.title = title
+        self.control = control
+        self.action = action
+        self.keyMap[key] = self.__onAction
+
+    def __onAction(self):
+        audio = self.UI_mgr.TTS_mgr.tts(self.title)
+        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+        if self.action is not None:
+            self.action(self.UI_mgr)
+        if self.control is not None:
+            self.control.onEnter()

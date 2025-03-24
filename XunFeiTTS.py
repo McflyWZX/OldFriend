@@ -2,8 +2,8 @@
 Author: iflytek、Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:17
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-02-26 21:28:21
-FilePath: \GitClone\OldFriend\XunFeiTTS.py
+LastEditTime: 2025-03-24 23:05:41
+fileName: \GitClone\OldFriend\XunFeiTTS.py
 Description: 基于讯飞官方demo实现讯飞在线TTS client
 本demo测试时运行的环境为：Windows + Python3.7
 本demo测试成功运行时所安装的第三方库及其版本如下：
@@ -34,6 +34,7 @@ import os
 from pydub import AudioSegment
 from pydub.playback import play
 import io
+from TTS_service import TTS_service
 
 
 STATUS_FIRST_FRAME = 0  # 第一帧的标识
@@ -41,24 +42,38 @@ STATUS_CONTINUE_FRAME = 1  # 中间帧标识
 STATUS_LAST_FRAME = 2  # 最后一帧的标识
 
 
-class Ws_Param(object):
+class XunFeiTTS(TTS_service, object):
     # 初始化
-    def __init__(self, APPID, APIKey, APISecret, Text):
-        self.APPID = APPID
-        self.APIKey = APIKey
-        self.APISecret = APISecret
-        self.Text = Text
+    def __init__(self):
+        self.APPID = '05745f43'
+        self.APIKey = '7d21bdfa0414f25762c40b8c04ac251b'
+        self.APISecret = 'MTA1Yzc1ODJjZTMwYjIyMjMyNDE0NDg2'
 
+    def tts(self, text: str, ttsPath: str, fileName: str):
+        super().tts(text, ttsPath, fileName)
+        self.__setArgs(text)
+        websocket.enableTrace(False)
+        wsUrl = self.__create_url()
+        ws = websocket.WebSocketApp(
+            wsUrl, 
+            on_message=lambda ws, message: self.__on_message(ws, message), 
+            on_error=lambda ws, error: self.__on_error(ws, error), 
+            on_close=lambda ws: self.__on_close(ws),
+            on_open=lambda ws: self.__on_open(ws)
+        )
+        ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+
+    def __setArgs(self, text: str):
         # 公共参数(common)
         self.CommonArgs = {"app_id": self.APPID}
         # 业务参数(business)，更多个性化参数可在官网查看
         self.BusinessArgs = {"aue": "lame", "sfl": 1, "auf": "audio/L16;rate=16000", "vcn": "xiaoyan", "tte": "utf8"}
-        self.Data = {"status": 2, "text": str(base64.b64encode(self.Text.encode('utf-8')), "UTF8")}
+        self.Data = {"status": 2, "text": str(base64.b64encode(text.encode('utf-8')), "UTF8")}
         #使用小语种须使用以下方式，此处的unicode指的是 utf16小端的编码方式，即"UTF-16LE"”
-        #self.Data = {"status": 2, "text": str(base64.b64encode(self.Text.encode('utf-16')), "UTF8")}
+        #self.Data = {"status": 2, "text": str(base64.b64encode(text.encode('utf-16')), "UTF8")}
 
     # 生成url
-    def create_url(self):
+    def __create_url(self):
         url = 'wss://tts-api.xfyun.cn/v2/tts'
         # 生成RFC1123格式的时间戳
         now = datetime.now()
@@ -90,65 +105,59 @@ class Ws_Param(object):
         # print('websocket url :', url)
         return url
 
-def on_message(ws, message):
-    try:
-        message =json.loads(message)
-        code = message["code"]
-        sid = message["sid"]
-        audio = message["data"]["audio"]
-        audio = base64.b64decode(audio)
-        status = message["data"]["status"]
-        print(message)
-        if status == 2:
-            print("ws is closed")
-            ws.close()
-        if code != 0:
-            errMsg = message["message"]
-            print("sid:%s call error:%s code is:%s" % (sid, errMsg, code))
-        else:
-            # Path("output.mp3").write_bytes(audio_bytes)
-            with open('./next.mp3', 'ab') as f:
-                f.write(audio)
-        
+    def __on_message(self, ws, message):
+        try:
+            message =json.loads(message)
+            code = message["code"]
+            sid = message["sid"]
+            audio = message["data"]["audio"]
+            audio = base64.b64decode(audio)
+            status = message["data"]["status"]
+            print(message)
+            if status == 2:
+                print("ws is closed")
+                ws.close()
+            if code != 0:
+                errMsg = message["message"]
+                print("sid:%s call error:%s code is:%s" % (sid, errMsg, code))
+            else:
+                directory = os.path.dirname(self.ttsPath)
+                os.makedirs(directory, exist_ok=True)
+                with open(self.ttsPath + self.fileName, 'ab') as f:
+                    f.write(audio)
+            
 
-    except Exception as e:
-        print("receive msg,but parse exception:", e)
+        except Exception as e:
+            print("receive msg,but parse exception:", e)
 
-
-
-# 收到websocket错误的处理
-def on_error(ws, error):
-    print("### error:", error)
-
-
-# 收到websocket关闭的处理
-def on_close(ws):
-    print("### closed ###")
+    # 收到websocket错误的处理
+    def __on_error(self, ws, error):
+        print("### error:", error)
 
 
-# 收到websocket连接建立的处理
-def on_open(ws):
-    def run(*args):
-        d = {"common": wsParam.CommonArgs,
-             "business": wsParam.BusinessArgs,
-             "data": wsParam.Data,
-             }
-        d = json.dumps(d)
-        print("------>开始发送文本数据")
-        ws.send(d)
-        if os.path.exists('./demo.pcm'):
-            os.remove('./demo.pcm')
+    # 收到websocket关闭的处理
+    def __on_close(self, ws):
+        print("### closed ###")
 
-    thread.start_new_thread(run, ())
+
+    # 收到websocket连接建立的处理
+    def __on_open(self, ws):
+        def run(*args):
+            d = {"common": self.CommonArgs,
+                "business": self.BusinessArgs,
+                "data": self.Data,
+                }
+            d = json.dumps(d)
+            print("------>开始发送文本数据")
+            ws.send(d)
+            if os.path.exists(self.ttsPath + self.fileName):
+                os.remove(self.ttsPath + self.fileName)
+
+        thread.start_new_thread(run, ())
 
 
 if __name__ == "__main__":
-    # 测试时候在此处正确填写相关信息即可运行
-    wsParam = Ws_Param(APPID='05745f43', APISecret='MTA1Yzc1ODJjZTMwYjIyMjMyNDE0NDg2',
-                       APIKey='7d21bdfa0414f25762c40b8c04ac251b',
-                       Text="下一页")
-    websocket.enableTrace(False)
-    wsUrl = wsParam.create_url()
-    ws = websocket.WebSocketApp(wsUrl, on_message=on_message, on_error=on_error, on_close=on_close)
-    ws.on_open = on_open
-    ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
+    ttsService = XunFeiTTS('ttsFile/')
+    ttsService.tts('陈翔6点半', 'test.mp3')
+
+

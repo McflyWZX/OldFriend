@@ -2,12 +2,13 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-24 23:46:53
+LastEditTime: 2025-03-25 01:41:05
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
 import pygame
 import time
+import threading
 
 class SoundManager:
     def __init__(self):
@@ -44,17 +45,33 @@ class SoundManager:
         self.pauseFlag = False
 
     '''
-    description: 插入一条语音播报，立即播放
+    description: 插入一条语音播报，立即播放、非阻塞式
     param {*} self、annc：语音播报音频文件
     return {*}
-    '''    
+    '''
     def insVoiceAnnc(self, anncPath: str):
+        # 启动语音管理的守护线程
+        voice_thread = threading.Thread(
+            target=self.__asyncPlayAnnc,
+            args=(anncPath,),
+            daemon=True  # 跟随主线程退出
+        )
+        voice_thread.start()
+
+    '''
+    description: 异步语音播报处理函数，会打断先前的播报
+    param {*} self、annc：语音播报音频文件
+    return {*}
+    '''
+    def __asyncPlayAnnc(self, annc_path: str):
         self.pause()
-        # 加载并播放音效
-        annc = pygame.mixer.Sound(anncPath)
-        annc.play()
+        # 立刻打断之前的播报，不混音
+        pygame.mixer.stop()
+        annc = pygame.mixer.Sound(annc_path)
+        channel = annc.play()
         
-        # 等待音效播放完成
-        while annc.get_num_channels() > 0:
-            time.sleep(0.001)
-        self.resume
+        # 更精准的播完检测（使用Channel对象）
+        while channel and channel.get_busy():
+            pygame.time.wait(50)  # 改用pygame时钟等待
+        self.resume()
+            

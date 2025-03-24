@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-22 13:44:43
+LastEditTime: 2025-03-23 16:10:09
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -43,7 +43,6 @@ class SoundAlbum(Item):
 
     def onSelect(self):
         super().onSelect()
-        print(' ' + self.title)
 
     def onEnter(self):
         super().onEnter()

@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-23 16:34:58
+LastEditTime: 2025-03-24 23:46:53
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
@@ -12,7 +12,7 @@ import time
 class SoundManager:
     def __init__(self):
         self.mainMusicPath = None
-        self.pause = True
+        self.pauseFlag = True
         self.playPos = 0
         pygame.mixer.init()
         pygame.init()
@@ -26,22 +26,22 @@ class SoundManager:
         pygame.mixer.music.play(-1)  # -1 表示无限循环
 
     def pause(self):
-        if self.mainMusicPath is None or self.pause is True:
+        if self.mainMusicPath is None or self.pauseFlag is True:
             return
         # 手动控制暂停位置的方法，这里我们直接调用库函数
         # mian_music_pos_g += (pygame.mixer.music.get_pos() + FADE_DURATION / 5) / 1000.0
         # pygame.mixer.music.fadeout(FADE_DURATION)
         self.playPos = pygame.mixer.music.get_pos() / 1000.0
         pygame.mixer.music.pause()
-        self.pause = True
+        self.pauseFlag = True
 
     def resume(self):
-        if self.mainMusicPath is None or self.pause is False:
+        if self.mainMusicPath is None or self.pauseFlag is False:
             return
         # pygame.mixer.music.load(MAIN_MUSIC)
         # pygame.mixer.music.play(start=mian_music_pos_g, fade_ms=FADE_DURATION)
         pygame.mixer.music.unpause()
-        self.pause = False
+        self.pauseFlag = False
 
     '''
     description: 插入一条语音播报，立即播放
@@ -56,5 +56,5 @@ class SoundManager:
         
         # 等待音效播放完成
         while annc.get_num_channels() > 0:
-            time.sleep(0.01)
+            time.sleep(0.001)
         self.resume

@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-22 18:45:56
+LastEditTime: 2025-03-30 15:04:42
 FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
@@ -19,9 +19,10 @@ if TYPE_CHECKING:
 description: 交互式控件的基类
 '''
 class Control:
-    def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
+    def __init__(self, UI_mgr: 'SUI', title='未知栏目', father: 'Control'=None):
         self.UI_mgr = UI_mgr
         self.title = title
+        self.father = father
         self.keyMap: dict[KeyCode, Callable[[], None]] = {}
 
     def onSelect(self):
@@ -33,6 +34,7 @@ class Control:
 
     def getNewKeyMap(self):
         return self.keyMap
+    
 
 '''
 description: 表项控件，当被选中时，默认播报标项名字

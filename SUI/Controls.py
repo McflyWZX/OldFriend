@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-23 16:10:09
+LastEditTime: 2025-03-30 16:11:15
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -11,6 +11,7 @@ from TTS_manager import TTS_manager
 from typing import Callable
 from pynput.keyboard import Key
 from SUI.BaseControl import *
+from ContentAPI.XiMalaya import *
 
 '''
 description: 菜单，储存SoundContent或者子Menu
@@ -19,18 +20,21 @@ description: 菜单，储存SoundContent或者子Menu
 DEFAULT_DESC = '这个内容没有介绍'
 
 class Menu(ItemList):
-    def __init__(self, UI_mgr, title: str, desc: str="", localMenu: list[Item]=[], remoteMenuUrl: str=None):
+    def __init__(self, UI_mgr, title: str, desc: str="", father: Control=None, localMenu: list[Item]=[], ximalayaTag: str=None):
         super().__init__(UI_mgr, title)
         self.localMenu = localMenu
-        self.remoteMenuUrl = remoteMenuUrl
-        self.items += self.getLocalMenu()
-        self.items += self.getRemoteMenu()
+        self.ximalayaTag = ximalayaTag
+        self.items += self.__getLocalMenu()
+        self.items += self.__getRemoteMenu()
 
-    def getLocalMenu(self):
+    def __getLocalMenu(self):
         return self.localMenu
     
-    def getRemoteMenu(self):
-        return []   # TODO: 获取在线内容菜单
+    def __getRemoteMenu(self):
+        if self.ximalayaTag is None:
+            return []
+        self.remoteAlbum = self.UI_mgr.xAPI.searchAlbums(self.title)
+        return [SoundAlbum(self.UI_mgr, album.title, album.id) for album in self.remoteAlbum]
 
 '''
 description: 声音集，包含具体的音源集ID，它

@@ -2,7 +2,7 @@
 Author: iflytek、Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:17
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-24 23:05:41
+LastEditTime: 2025-03-30 16:21:11
 fileName: \GitClone\OldFriend\XunFeiTTS.py
 Description: 基于讯飞官方demo实现讯飞在线TTS client
 本demo测试时运行的环境为：Windows + Python3.7
@@ -113,7 +113,7 @@ class XunFeiTTS(TTS_service, object):
             audio = message["data"]["audio"]
             audio = base64.b64decode(audio)
             status = message["data"]["status"]
-            print(message)
+            # print(message)
             if status == 2:
                 print("ws is closed")
                 ws.close()

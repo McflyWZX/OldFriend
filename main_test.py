@@ -8,6 +8,7 @@ Description: OldFriend技术测试场
 '''
 from SUI.Manager import SUI
 from SUI.Controls import *
+from ContentAPI.XiMalaya import XiMalaya
 from XunFeiTTS import XunFeiTTS
 import time
 
@@ -19,14 +20,17 @@ if TEST_TYPE == 'TOTAL':
     xunTTS = XunFeiTTS()
     ttsManager = TTS_manager(xunTTS)
     soundManager = SoundManager()
+    xAPI = XiMalaya()
 
-    sui = SUI(soundManager, ttsManager)
+    sui = SUI(soundManager, ttsManager, xAPI)
     
     newsReport = SoundAlbum(sui, '新闻联播', 31923706)
     morningCaffe = SoundAlbum(sui, '声动早咖啡', 51076156)
 
-    news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe])
-    home = Menu(sui, '主页', localMenu=[news])
+
+    books = Menu(sui, '听书', ximalayaTag='听书')
+    news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe], ximalayaTag='新闻')
+    home = Menu(sui, '主页', localMenu=[news, books])
     
     sui.changeVisitTo(home)
     while True:

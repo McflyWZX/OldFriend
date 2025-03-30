@@ -12,7 +12,8 @@ from urllib.parse import quote
 
     
 class XiMalayaTrackInfo:
-    def __init__(self, trackJson: dict):
+    def __init__(self, trackJson: dict, albumInfo: 'XiMalayaAlbumInfo'):
+        self.albumInfo = albumInfo
         self.title = trackJson['title']
         self.trackId = trackJson['trackId']
         self.trackRecordId = trackJson['trackRecordId']
@@ -21,6 +22,7 @@ class XiMalayaTrackInfo:
         self.isPaid = trackJson['isPaid']
         self.isFree = trackJson['isFree']
         self.createTime = datetime.datetime.fromtimestamp(trackJson['createdAt'] / 1000.0).strftime(f"%Y-%m-%d")
+        self.filePath = '喜马拉雅/' + albumInfo.title + '/' + self.title + '.mp3'
     
     def __str__(self):
         res = '======title: ' + self.title + '======\r\n'

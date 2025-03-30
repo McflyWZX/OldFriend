@@ -16,6 +16,7 @@ from pynput.keyboard import Key
 import copy
 from SUI.BaseControl import Control
 from SUI.Controls import *
+from ContentAPI.XiMalaya import XiMalaya
 
 '''
 description: 提供SUI的创建和管理功能，负责SUI内部控件数据流传递.
@@ -23,9 +24,10 @@ description: 提供SUI的创建和管理功能，负责SUI内部控件数据流�
              activity的按键功能挂接函数
 '''
 class SUI:
-    def __init__(self, soundMgr:SoundManager, TTS_mgr: TTS_manager):
+    def __init__(self, soundMgr:SoundManager, TTS_mgr: TTS_manager, xAPI: XiMalaya):
         self.soundMgr = soundMgr
         self.TTS_mgr = TTS_mgr
+        self.xAPI = xAPI
         self.__activity = None
         self.keyMap: dict[Key, Callable[[], None]] = {}
         self.qButtons = set()

@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-24 22:41:28
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-24 23:45:50
+LastEditTime: 2025-03-31 00:36:25
 FilePath: \GitClone\OldFriend\main_test.py
 Description: OldFriend技术测试场
 '''
@@ -37,12 +37,7 @@ if TEST_TYPE == 'TOTAL':
         time.sleep(1)
 elif TEST_TYPE == 'SOUND':      # 测试混响系统
     soundManager = SoundManager()
-    # soundManager.insVoiceAnnc(TTS_PATH + 'test.mp3')
-    # time.sleep(2)
-    # soundManager.insVoiceAnnc(TTS_PATH + 'test.mp3')
-    # time.sleep(2)
-    # soundManager.insVoiceAnnc(TTS_PATH + 'test.mp3')
-    for annc in TEST_ANNC_FILES:
+    for annc in TEST_ANNC_FILES: 
         soundManager.insVoiceAnnc(TTS_PATH + annc)
         time.sleep(2)
 elif TEST_TYPE == 'TTS':        # 测试TTS系统

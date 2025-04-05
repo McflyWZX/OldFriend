@@ -19,12 +19,12 @@ class SoundManager:
         pygame.init()
 
     def playMainMusic(self, musicPath: str = None):
-        self.mainMusicPath = musicPath if musicPath is not None else self.mainMusicPath
+        self.mainMusicPath = musicPath or self.mainMusicPath
         if self.mainMusicPath is None:
             print('Info: 尝试在没指定路径的情况下播放音乐')
             return
         pygame.mixer.music.load(self.mainMusicPath)
-        pygame.mixer.music.play(-1)  # -1 表示无限循环
+        pygame.mixer.music.play(loops=0)
 
     def pause(self):
         if self.mainMusicPath is None or self.pauseFlag is True:

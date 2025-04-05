@@ -12,8 +12,7 @@ from urllib.parse import quote
 
     
 class XiMalayaTrackInfo:
-    def __init__(self, trackJson: dict, albumInfo: 'XiMalayaAlbumInfo'):
-        self.albumInfo = albumInfo
+    def __init__(self, trackJson: dict):
         self.title = trackJson['title']
         self.trackId = trackJson['trackId']
         self.trackRecordId = trackJson['trackRecordId']
@@ -22,7 +21,6 @@ class XiMalayaTrackInfo:
         self.isPaid = trackJson['isPaid']
         self.isFree = trackJson['isFree']
         self.createTime = datetime.datetime.fromtimestamp(trackJson['createdAt'] / 1000.0).strftime(f"%Y-%m-%d")
-        self.filePath = '喜马拉雅/' + albumInfo.title + '/' + self.title + '.mp3'
     
     def __str__(self):
         res = '======title: ' + self.title + '======\r\n'
@@ -78,8 +76,6 @@ class XiMalaya:
     return {dict}: 解析后的JSON结果
     '''
     def getPlaylist(self, albumId: int, page=1) -> list[XiMalayaTrackInfo]:
-        # 编码关键词
-        encoded_kw = quote(keyword)
         # 基础URL
         base_url = "http://mobwsa.ximalaya.com/mobile/playlist/album/page"
         # 构建请求参数

@@ -6,7 +6,7 @@ LastEditTime: 2025-03-31 00:36:25
 FilePath: \GitClone\OldFriend\main_test.py
 Description: OldFriend技术测试场
 '''
-from SUI.Manager import SUI
+from SUI.SuiManager import SUI
 from SUI.Controls import *
 from ContentAPI.XiMalaya import XiMalaya
 from XunFeiTTS import XunFeiTTS

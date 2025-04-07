@@ -13,7 +13,7 @@ from TTS_manager import TTS_manager
 from typing import Callable
 from pynput.keyboard import Key, KeyCode
 if TYPE_CHECKING:
-    from SUI.Manager import SUI
+    from SUI.SuiManager import SUI
 
 '''
 description: 交互式控件的基类

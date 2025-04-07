@@ -3,7 +3,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-05 17:16:13
+LastEditTime: 2025-04-07 17:27:03
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
@@ -32,13 +32,16 @@ class SUI:
         self.soundMgr = soundMgr
         self.TTS_mgr = TTS_mgr
         self.xAPI = xAPI
-        self.__activity = None
-        self.album: SoundAlbum = None
         self.keyMap: dict[Key, Callable[[], None]] = {}
         self.qButtons = set()
+        self.__visitStack: list[Control] = []   # 浏览栈
+        self.__home: Control = []   # 主页
+        self.__album: SoundAlbum = None     # 主加载的专辑
 
         if not os.path.isdir(SOUNDS_PATH):
                 os.mkdir(SOUNDS_PATH)
+
+        self.addQuickButton(QuickButton(self, Key.esc, title='返回', action=self.__onPressBack))
 
         # 启动按键监听
         keyboard.Listener(on_press=self.onKeyPress).start()
@@ -50,7 +53,7 @@ class SUI:
     def playSound(self, path: str=None, url: str=None):
         # url有效，说明需要下载
         if url is not None:
-            path = path or SOUNDS_PATH + '/' + str(self.album.albumID)
+            path = path or SOUNDS_PATH + '/' + str(self.__album.albumID)
             if not os.path.isdir(path):
                 os.mkdir(path)
             path += '/' + url.split('/')[-1]
@@ -66,11 +69,8 @@ class SUI:
         else:
             print('无url: ' + url)
             
-            
-
-
     def setAlbum(self, album: SoundAlbum):
-        self.album = album
+        self.__album = album
 
     def addQuickButton(self, qButton: QuickButton):
         if qButton in self.qButtons:
@@ -83,17 +83,44 @@ class SUI:
         if key in self.keyMap.keys():
             # print('key mapped!')
             self.keyMap[key]()
-        # print(key)
+        print(key)
+
+    def __onPressPause(self):
+        if self.__album is not None:
+            pass
+
+    def __onPressBack(self):
+        self.__exitActivity()
+
+    def __exitActivity(self):
+        if len(self.__visitStack) <= 1:
+            self.__visitStack.clear()
+            self.changeVisitTo(self.home)
+            # TODO：还要恢复按键设置到默认
+            return
+        delKeys = self.__visitStack[-1].onBack()
+        self.__delKeyMap(delKeys)
+        self.__visitStack.pop()
+        self.__setKeyMap(self.__visitStack[-1].getNewKeyMap())
+        # self.__setKeyMap(activity.getNewKeyMap())
+        print('切换到了%s'%self.__visitStack[-1])
 
     def changeVisitTo(self, activity: Control):
-        self.__activity = activity
+        self.__visitStack.append(activity)
         self.__setKeyMap(activity.getNewKeyMap())
         print('切换到了%s'%activity)
 
+    def setHome(self, activity: Control):
+        self.__home = activity
+        self.changeVisitTo(self.__home)
+
     def __setKeyMap(self, newKeyMap:dict[Key, Callable[[], None]]):
-        # TODO: 目前只做了key替换，后面要考虑一下要不要记录key历史
         for key in newKeyMap.keys():
             self.keyMap[key] = newKeyMap[key]
+
+    def __delKeyMap(self, delKeys:list[Key]):
+        for key in delKeys:
+            self.keyMap.pop(key)
 
 if __name__ == '__main__':
     sui = SUI(None, None)

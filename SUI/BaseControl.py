@@ -32,6 +32,9 @@ class Control:
     def onEnter(self):
         pass
 
+    def onBack(self):
+        return [key for key in self.keyMap.keys()]
+
     def getNewKeyMap(self):
         return self.keyMap
     

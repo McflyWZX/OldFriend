@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-24 22:41:28
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-31 00:36:25
+LastEditTime: 2025-04-08 23:05:41
 FilePath: \GitClone\OldFriend\main_test.py
 Description: OldFriend技术测试场
 '''
@@ -32,7 +32,7 @@ if TEST_TYPE == 'TOTAL':
     news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe], ximalayaTag='新闻')
     home = Menu(sui, '主页', localMenu=[news, books])
     
-    sui.changeVisitTo(home)
+    sui.setHome(home)
     while True:
         time.sleep(1)
 elif TEST_TYPE == 'SOUND':      # 测试混响系统

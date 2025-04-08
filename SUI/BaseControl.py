@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-30 15:04:42
+LastEditTime: 2025-04-08 21:47:02
 FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
@@ -29,14 +29,45 @@ class Control:
         audio = self.UI_mgr.TTS_mgr.tts(self.title)
         self.UI_mgr.soundMgr.insVoiceAnnc(audio)
 
+    '''
+    description: 进入（浏览）到改控件时调用
+    param {*} self
+    return {*}
+    '''    
     def onEnter(self):
         pass
 
-    def onBack(self):
-        return [key for key in self.keyMap.keys()]
+    '''
+    description: 浏览该控件时按下enter时调用
+    param {*} self
+    return {Control} 可能返回控件，让SUI进入该控件。也可能返回空，代表SUI无需操作
+    '''    
+    def onPressEnter(self) -> 'Control':
+        pass
 
-    def getNewKeyMap(self):
-        return self.keyMap
+    '''
+    description: 退出该控件时调用
+    param {*} self
+    return {*}
+    '''    
+    def onExit(self):
+        pass
+
+    '''
+    description: 浏览该控件时按下next时调用
+    param {*} self
+    return {*}
+    '''
+    def onGoNext(self):
+        pass
+
+    '''
+    description: 浏览该控件时按下last时调用
+    param {*} self
+    return {*}
+    '''
+    def onGoLast(self):
+        pass
     
 
 '''
@@ -62,23 +93,27 @@ class ItemList(Control):
         super().__init__(UI_mgr, title)
         self.items:list[Item] = []
         self.index = 0
-        self.keyMap[Key.right] = self.__keyNext
-        self.keyMap[Key.left] = self.__keyLast
-        self.keyMap[Key.enter] = self.__keyEnter
 
     def onSelect(self):
         super().onSelect()
         print('选中了：%s'%self.title)
 
+    def onPressEnter(self) -> Control:
+        items = self.__getItems()
+        if len(items) == 0:
+            # TODO: 播放“未选中任何内容”
+            print('未选中任何内容')
+            return None
+        return items[self.index]
+
     def onEnter(self):
-        if len(self.items) == 0:
-            # TODO: 播放“当前分类无内容”
-            print('当前分类无内容')
-            return
-        # 将SUI当前正在浏览的列表替换  
-        self.UI_mgr.changeVisitTo(self)
-        self.items[0].onSelect()
         print('进入了：%s'%self.title)
+        items = self.__getItems()
+        if len(items) == 0:
+            # TODO: 播放“该分类无内容”
+            print('该分类无内容')
+            return
+        items[self.index].onSelect()
 
     '''
     description: 获取自己的items，默认直接返回，上层可根据需要重构
@@ -86,16 +121,15 @@ class ItemList(Control):
     def __getItems(self):
         return self.items
 
-    def __keyNext(self):
+    def onGoNext(self):
+        items = self.__getItems()
         self.index += 1
-        self.index %= len(self.__getItems())
-        self.items[self.index].onSelect()
+        self.index %= len(items)
+        items[self.index].onSelect()
 
-    def __keyLast(self):
-        self.index += (-1 + len(self.__getItems()))
-        self.index %= len(self.items)
-        self.items[self.index].onSelect()
-
-    def __keyEnter(self):
-        self.items[self.index].onEnter()
+    def onGoLast(self):
+        items = self.__getItems()
+        self.index += (-1 + len(items))
+        self.index %= len(items)
+        items[self.index].onSelect()
 

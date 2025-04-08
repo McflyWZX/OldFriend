@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-07 17:52:33
+LastEditTime: 2025-04-08 22:03:46
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -24,8 +24,12 @@ class Menu(ItemList):
         super().__init__(UI_mgr, title)
         self.localMenu = localMenu
         self.ximalayaTag = ximalayaTag
-        self.items += self.__getLocalMenu()
-        self.items += self.__getRemoteMenu()
+        self.items = self.__getItems()
+
+    def __getItems(self):
+        if len(self.items) <= 0:
+            self.items = self.__getLocalMenu() + self.__getRemoteMenu()
+        return self.items
 
     def __getLocalMenu(self):
         return self.localMenu
@@ -48,8 +52,6 @@ class SoundAlbum(Item):
         # 此处不加载音频列表，在onEnter处加载
         self.remoteContent = None
         self.sounds = []
-        self.keyMap[Key.right] = self.__keyNext
-        self.keyMap[Key.left] = self.__keyLast
 
     def onSelect(self):
         super().onSelect()
@@ -62,23 +64,21 @@ class SoundAlbum(Item):
             # TODO: 播放“专辑加载失败”
             print('专辑加载失败')
             return
-        # 将SUI当前正在浏览的列表替换  
-        self.UI_mgr.changeVisitTo(self)
         self.sounds[self.lastPlayIndex].onSelect()
         print('进入了：%s'%self.title)
         self.UI_mgr.setAlbum(self)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
 
     def onTrackPlayFinish(self):
-        self.__keyNext()
+        self.onGoNext()
 
-    def __keyNext(self):
+    def onGoNext(self):
         self.lastPlayIndex += 1
         self.lastPlayIndex %= len(self.sounds)
         self.sounds[self.lastPlayIndex].onSelect()
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
 
-    def __keyLast(self):
+    def onGoLast(self):
         self.lastPlayIndex += (-1 + len(self.sounds))
         self.lastPlayIndex %= len(self.sounds)
         self.sounds[self.lastPlayIndex].onSelect()
@@ -100,18 +100,3 @@ class SoundContent(Item):
 
     def onEnter(self):
         pass
-
-class QuickButton(Control):
-    def __init__(self, UI_mgr: 'SUI', key: KeyCode, title='未知栏目', control: Control=None, action: Callable[[], bool]=None):
-        super().__init__(UI_mgr, title)
-        self.control = control
-        self.action = action
-        self.keyMap[key] = self.__onAction
-
-    def __onAction(self):
-        audio = self.UI_mgr.TTS_mgr.tts(self.title)
-        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
-        if self.action is not None:
-            self.action()
-        if self.control is not None:
-            self.control.onEnter()

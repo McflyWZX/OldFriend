@@ -14,6 +14,7 @@ class SoundManager:
     def __init__(self):
         self.mainMusicPath = None
         self.pauseFlag = True
+        self.pauseOutter = True
         self.playPos = 0
         pygame.mixer.init()
         pygame.init()
@@ -25,6 +26,9 @@ class SoundManager:
             return
         pygame.mixer.music.load(self.mainMusicPath)
         pygame.mixer.music.play(loops=0)
+
+    def toggleOutterPause(self):
+        pass
 
     def pause(self):
         if self.mainMusicPath is None or self.pauseFlag is True:

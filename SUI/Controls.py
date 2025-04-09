@@ -64,7 +64,8 @@ class SoundAlbum(Item):
             # TODO: 播放“专辑加载失败”
             print('专辑加载失败')
             return
-        self.sounds[self.lastPlayIndex].onSelect()
+        # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
+        self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         print('进入了：%s'%self.title)
         self.UI_mgr.setAlbum(self)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
@@ -75,13 +76,15 @@ class SoundAlbum(Item):
     def onGoNext(self):
         self.lastPlayIndex += 1
         self.lastPlayIndex %= len(self.sounds)
-        self.sounds[self.lastPlayIndex].onSelect()
+        # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
+        self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
 
     def onGoLast(self):
         self.lastPlayIndex += (-1 + len(self.sounds))
         self.lastPlayIndex %= len(self.sounds)
-        self.sounds[self.lastPlayIndex].onSelect()
+        # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
+        self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
 
 '''
@@ -94,9 +97,8 @@ class SoundContent(Item):
         self.playRecord = 0
         self.playUrl = playUrl
 
-    def onSelect(self):
-        audio = self.UI_mgr.TTS_mgr.tts(self.title)
-        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+    def onSelect(self, needBlock=False):
+        self.UI_mgr.insAnnc(self.title, needBlock)
 
     def onEnter(self):
         pass

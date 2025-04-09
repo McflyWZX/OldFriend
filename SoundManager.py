@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-25 01:41:05
+LastEditTime: 2025-04-09 22:08:37
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
@@ -16,6 +16,8 @@ class SoundManager:
         self.pauseFlag = True
         self.pauseOutter = True
         self.playPos = 0
+        self.anncVolume = 0.6
+        self.mainVolume = 1
         pygame.mixer.init()
         pygame.init()
 
@@ -25,7 +27,9 @@ class SoundManager:
             print('Info: 尝试在没指定路径的情况下播放音乐')
             return
         pygame.mixer.music.load(self.mainMusicPath)
+        pygame.mixer.music.set_volume(self.mainVolume)
         pygame.mixer.music.play(loops=0)
+        self.pauseFlag = False
 
     def toggleOutterPause(self):
         pass
@@ -47,6 +51,21 @@ class SoundManager:
         # pygame.mixer.music.play(start=mian_music_pos_g, fade_ms=FADE_DURATION)
         pygame.mixer.music.unpause()
         self.pauseFlag = False
+
+    '''
+    description: 插入一条语音播报，立即播放、阻塞式
+    param {*} self、annc：语音播报音频文件
+    return {*}
+    '''
+    def insVoiceAnncBlock(self, anncPath: str):
+        # 启动语音管理的守护线程
+        voice_thread = threading.Thread(
+            target=self.__asyncPlayAnnc,
+            args=(anncPath,),
+            daemon=True  # 跟随主线程退出
+        )
+        voice_thread.start()
+        voice_thread.join()
 
     '''
     description: 插入一条语音播报，立即播放、非阻塞式
@@ -72,6 +91,7 @@ class SoundManager:
         # 立刻打断之前的播报，不混音
         pygame.mixer.stop()
         annc = pygame.mixer.Sound(annc_path)
+        annc.set_volume(self.anncVolume)
         channel = annc.play()
         
         # 更精准的播完检测（使用Channel对象）

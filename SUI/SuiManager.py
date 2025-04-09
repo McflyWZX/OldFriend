@@ -58,9 +58,12 @@ class SUI:
     def onSoundPlayEnd(self):
         pass
 
-    def insAnnc(self, txt: str):
+    def insAnnc(self, txt: str, needBlock=False):
         audio = self.TTS_mgr.tts(txt)
-        self.soundMgr.insVoiceAnnc(audio)
+        if needBlock:
+            self.soundMgr.insVoiceAnncBlock(audio)
+        else:
+            self.soundMgr.insVoiceAnnc(audio)
 
     def playSound(self, path: str=None, url: str=None):
         # url有效，说明需要下载

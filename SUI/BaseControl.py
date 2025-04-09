@@ -26,8 +26,7 @@ class Control:
         self.keyMap: dict[KeyCode, Callable[[], None]] = {}
 
     def onSelect(self):
-        audio = self.UI_mgr.TTS_mgr.tts(self.title)
-        self.UI_mgr.soundMgr.insVoiceAnnc(audio)
+        self.UI_mgr.insAnnc(self.title)
 
     '''
     description: 进入（浏览）到改控件时调用

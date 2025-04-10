@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-08 22:03:46
+LastEditTime: 2025-04-10 22:21:35
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -24,17 +24,17 @@ class Menu(ItemList):
         super().__init__(UI_mgr, title)
         self.localMenu = localMenu
         self.ximalayaTag = ximalayaTag
-        self.items = self.__getItems()
+        self.items = []
 
-    def __getItems(self):
+    def _getItems(self):
         if len(self.items) <= 0:
-            self.items = self.__getLocalMenu() + self.__getRemoteMenu()
+            self.items = self._getLocalMenu() + self._getRemoteMenu()
         return self.items
 
-    def __getLocalMenu(self):
+    def _getLocalMenu(self):
         return self.localMenu
     
-    def __getRemoteMenu(self):
+    def _getRemoteMenu(self):
         if self.ximalayaTag is None:
             return []
         self.remoteAlbum = self.UI_mgr.xAPI.searchAlbums(self.title)

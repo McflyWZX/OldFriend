@@ -2,11 +2,12 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-25 23:06:09
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-28 00:13:17
+LastEditTime: 2025-04-10 22:22:05
 FilePath: \OldFriend\ContentAPI\XiMalaya.py
 Description: 喜马拉雅api实现
 '''
 import datetime
+import time
 import requests
 from urllib.parse import quote
 
@@ -57,9 +58,30 @@ class XiMalayaAlbumInfo:
         
 class XiMalaya:
     def __init__(self):
-        pass
+        self.opDelayTime = 0.5
+        self.lastReqTime: dict[str, float] = {
+            'searchAlbums': 0.0,
+            'getPlaylist': 0.0
+        }
 
-    def __processTrackDict(self, result: dict):
+    '''
+    description: 此函数为防ban函数，人为制造一个连续操作延迟，防止被ban
+    param {*} self
+    param {str} opName: 操作函数的名字
+    '''    
+    def _waitForOpDelay(self, opName: str):
+        if opName not in self.lastReqTime.keys():
+            time.sleep(self.opDelayTime)
+            self.lastReqTime[opName] = time.time()
+            return
+        lastOpTime = self.lastReqTime[opName]
+        nowTime = time.time()
+        while nowTime - lastOpTime < self.opDelayTime:
+            time.sleep(0.05)
+            nowTime = time.time()
+        self.lastReqTime[opName] = nowTime
+
+    def _processTrackDict(self, result: dict):
         trackJsons: dict = result['list']
         if trackJsons is None or len(trackJsons) < 1:
             return None
@@ -91,6 +113,8 @@ class XiMalaya:
             "Referer": "https://www.ximalaya.com/search/",
             "X-Requested-With": "XMLHttpRequest"
         }
+
+        self._waitForOpDelay('getPlaylist')
         
         try:
             # 发送请求
@@ -98,13 +122,13 @@ class XiMalaya:
                 base_url,
                 params=params,
                 headers=headers,
-                timeout=10  # 10秒超时
+                timeout=1  # 10秒超时
             )
             # 状态检查
             response.raise_for_status()
             # 解析JSON
             # return self.__processAlbumsDict(response.json())
-            return self.__processTrackDict(response.json())
+            return self._processTrackDict(response.json())
             
         except requests.exceptions.HTTPError as e:
             print(f"HTTP错误: {e.response.status_code}")
@@ -117,7 +141,7 @@ class XiMalaya:
             print(f"JSON解析失败: {str(e)}")
             return None
 
-    def __processAlbumsDict(self, result: dict, vipOk: bool=False):
+    def _processAlbumsDict(self, result: dict, vipOk: bool=False):
         albumsJsons: dict = result['data']['result']['response']['docs']
         if albumsJsons is None or len(albumsJsons) < 1:
             return None
@@ -159,18 +183,20 @@ class XiMalaya:
             "X-Requested-With": "XMLHttpRequest"
         }
         
+        self._waitForOpDelay('searchAlbums')
+
         try:
             # 发送请求
             response = requests.get(
                 base_url,
                 params=params,
                 headers=headers,
-                timeout=10  # 10秒超时
+                timeout=1  # 10秒超时
             )
             # 状态检查
             response.raise_for_status()
             # 解析JSON
-            return self.__processAlbumsDict(response.json())
+            return self._processAlbumsDict(response.json())
             # return response.json()
             
         except requests.exceptions.HTTPError as e:
@@ -186,10 +212,10 @@ class XiMalaya:
 
 # 示例使用
 if __name__ == "__main__":
-    keyword = "科技"  # 替换你的关键词
+    keyword = "新闻"  # 替换你的关键词
     xAPI = XiMalaya()
     result = xAPI.searchAlbums(keyword)
-    playlist = xAPI.getPlaylist(result[0].id, 2)
+    playlist = xAPI.getPlaylist(result[2].id, 2)
 
     if result:
         print(playlist)

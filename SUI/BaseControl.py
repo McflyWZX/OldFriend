@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-08 16:32:06
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-08 21:47:02
+LastEditTime: 2025-04-10 22:19:52
 FilePath: \OldFriend\'SUI'\BaseControl.py
 Description: SUI模块内的控件子模块，定义了
              列表、选项、快捷按钮三种交互控件及基础控件
@@ -98,7 +98,7 @@ class ItemList(Control):
         print('选中了：%s'%self.title)
 
     def onPressEnter(self) -> Control:
-        items = self.__getItems()
+        items = self._getItems()
         if len(items) == 0:
             # TODO: 播放“未选中任何内容”
             print('未选中任何内容')
@@ -107,7 +107,7 @@ class ItemList(Control):
 
     def onEnter(self):
         print('进入了：%s'%self.title)
-        items = self.__getItems()
+        items = self._getItems()
         if len(items) == 0:
             # TODO: 播放“该分类无内容”
             print('该分类无内容')
@@ -117,17 +117,17 @@ class ItemList(Control):
     '''
     description: 获取自己的items，默认直接返回，上层可根据需要重构
     '''    
-    def __getItems(self):
+    def _getItems(self):
         return self.items
 
     def onGoNext(self):
-        items = self.__getItems()
+        items = self._getItems()
         self.index += 1
         self.index %= len(items)
         items[self.index].onSelect()
 
     def onGoLast(self):
-        items = self.__getItems()
+        items = self._getItems()
         self.index += (-1 + len(items))
         self.index %= len(items)
         items[self.index].onSelect()

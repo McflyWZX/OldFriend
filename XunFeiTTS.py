@@ -2,7 +2,7 @@
 Author: iflytek、Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:17
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-03-30 16:21:11
+LastEditTime: 2025-04-10 22:23:17
 fileName: \GitClone\OldFriend\XunFeiTTS.py
 Description: 基于讯飞官方demo实现讯飞在线TTS client
 本demo测试时运行的环境为：Windows + Python3.7
@@ -51,19 +51,19 @@ class XunFeiTTS(TTS_service, object):
 
     def tts(self, text: str, ttsPath: str, fileName: str):
         super().tts(text, ttsPath, fileName)
-        self.__setArgs(text)
+        self._setArgs(text)
         websocket.enableTrace(False)
-        wsUrl = self.__create_url()
+        wsUrl = self._create_url()
         ws = websocket.WebSocketApp(
             wsUrl, 
-            on_message=lambda ws, message: self.__on_message(ws, message), 
-            on_error=lambda ws, error: self.__on_error(ws, error), 
-            on_close=lambda ws: self.__on_close(ws),
-            on_open=lambda ws: self.__on_open(ws)
+            on_message=lambda ws, message: self._on_message(ws, message), 
+            on_error=lambda ws, error: self._on_error(ws, error), 
+            on_close=lambda ws: self._on_close(ws),
+            on_open=lambda ws: self._on_open(ws)
         )
         ws.run_forever(sslopt={"cert_reqs": ssl.CERT_NONE})
 
-    def __setArgs(self, text: str):
+    def _setArgs(self, text: str):
         # 公共参数(common)
         self.CommonArgs = {"app_id": self.APPID}
         # 业务参数(business)，更多个性化参数可在官网查看
@@ -73,7 +73,7 @@ class XunFeiTTS(TTS_service, object):
         #self.Data = {"status": 2, "text": str(base64.b64encode(text.encode('utf-16')), "UTF8")}
 
     # 生成url
-    def __create_url(self):
+    def _create_url(self):
         url = 'wss://tts-api.xfyun.cn/v2/tts'
         # 生成RFC1123格式的时间戳
         now = datetime.now()
@@ -105,7 +105,7 @@ class XunFeiTTS(TTS_service, object):
         # print('websocket url :', url)
         return url
 
-    def __on_message(self, ws, message):
+    def _on_message(self, ws, message):
         try:
             message =json.loads(message)
             code = message["code"]
@@ -131,17 +131,17 @@ class XunFeiTTS(TTS_service, object):
             print("receive msg,but parse exception:", e)
 
     # 收到websocket错误的处理
-    def __on_error(self, ws, error):
+    def _on_error(self, ws, error):
         print("### error:", error)
 
 
     # 收到websocket关闭的处理
-    def __on_close(self, ws):
+    def _on_close(self, ws):
         print("### closed ###")
 
 
     # 收到websocket连接建立的处理
-    def __on_open(self, ws):
+    def _on_open(self, ws):
         def run(*args):
             d = {"common": self.CommonArgs,
                 "business": self.BusinessArgs,

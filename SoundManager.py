@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-09 22:08:37
+LastEditTime: 2025-04-10 22:20:08
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
@@ -60,7 +60,7 @@ class SoundManager:
     def insVoiceAnncBlock(self, anncPath: str):
         # 启动语音管理的守护线程
         voice_thread = threading.Thread(
-            target=self.__asyncPlayAnnc,
+            target=self._asyncPlayAnnc,
             args=(anncPath,),
             daemon=True  # 跟随主线程退出
         )
@@ -75,7 +75,7 @@ class SoundManager:
     def insVoiceAnnc(self, anncPath: str):
         # 启动语音管理的守护线程
         voice_thread = threading.Thread(
-            target=self.__asyncPlayAnnc,
+            target=self._asyncPlayAnnc,
             args=(anncPath,),
             daemon=True  # 跟随主线程退出
         )
@@ -86,7 +86,7 @@ class SoundManager:
     param {*} self、annc：语音播报音频文件
     return {*}
     '''
-    def __asyncPlayAnnc(self, annc_path: str):
+    def _asyncPlayAnnc(self, annc_path: str):
         self.pause()
         # 立刻打断之前的播报，不混音
         pygame.mixer.stop()

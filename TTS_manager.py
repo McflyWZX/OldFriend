@@ -8,6 +8,8 @@ Description: TTS管理模块，黑盒化文字键值转语音，内部基于记�
 '''
 import sqlite3
 import hashlib
+import re
+from datetime import datetime
 import os
 from TTS_service import TTS_service
 
@@ -19,16 +21,38 @@ class TTS_manager:
         self._initTTSdb()
         self.ttsService = ttsService
 
+    '''
+    description: 识别字符串中的连续日期数字，转化为自然可读的日期
+    param {*} self
+    param {str} text
+    '''    
+    def _detectAndConvertDates(self, text: str):
+        # 定义正则匹配YYYYMMDD格式（8位连续数字）
+        pattern = r'\b(\d{4})(\d{2})(\d{2})\b'
+        def replaceMatch(match):
+            year, month, day = match.groups()
+            try:
+                # 验证是否为有效日期
+                datetime(int(year), int(month), int(day))
+                return f"{year}年{month}月{day}日"  # 😎 转换为自然语言格式
+            except ValueError:
+                return match.group()  # 无效日期保持原样
+        # 用正则替换并验证日期
+        return re.sub(pattern, replaceMatch, text)
+
     def tts(self, text: str):
         self.ttsDb = sqlite3.connect(self.ttsDbPath)
-        txtHash = self._getHash(text)
+        ntext = self._detectAndConvertDates(text)
+        if text != ntext:
+            print(text)
+        txtHash = self._getHash(ntext)
         fileName = txtHash + '.mp3'
         # 如果文件不存在或数据库无记录，那无论如何都要创建文件的，同时更新数据库
-        if (not os.path.isfile(TTS_PATH + fileName)) or (not self._isTxtHashExitst(text, txtHash)):
-            self._saveTxtHash(text, txtHash)
+        if (not os.path.isfile(TTS_PATH + fileName)) or (not self._isTxtHashExitst(ntext, txtHash)):
+            self._saveTxtHash(ntext, txtHash)
             if os.path.isfile(fileName):
                 os.remove(fileName)
-            self.ttsService.tts(text, TTS_PATH, fileName)
+            self.ttsService.tts(ntext, TTS_PATH, fileName)
         self.ttsDb.close()
         return TTS_PATH + fileName
     

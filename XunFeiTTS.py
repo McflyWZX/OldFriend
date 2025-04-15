@@ -157,7 +157,8 @@ class XunFeiTTS(TTS_service, object):
 
 
 if __name__ == "__main__":
-    ttsService = XunFeiTTS('ttsFile/')
-    ttsService.tts('陈翔6点半', 'test.mp3')
+    print(f"websocket-client version: {websocket.__version__}")
+    ttsService = XunFeiTTS()
+    ttsService.tts('陈翔6点半', 'ttsFile/', 'test.mp3')
 
 

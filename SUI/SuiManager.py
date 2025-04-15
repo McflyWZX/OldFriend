@@ -119,7 +119,7 @@ class SUI:
 
     def _exitActivity(self):
         if len(self._visitStack) <= 1:
-            self.__setHome(self.home)
+            self.setHome(self.home)
             return
         self._visitStack[-1].onExit()
         self._visitStack.pop()

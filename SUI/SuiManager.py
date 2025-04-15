@@ -12,7 +12,7 @@ from SoundManager import SoundManager
 from TTS_manager import TTS_manager
 from pynput import keyboard
 from typing import Callable
-from pynput.keyboard import Key
+import keyboard
 import copy
 from SUI.BaseControl import Control
 from SUI.Controls import *
@@ -33,7 +33,7 @@ class SUI:
         self.soundMgr = soundMgr
         self.TTS_mgr = TTS_mgr
         self.xAPI = xAPI
-        self.keyMap: dict[Key, Callable[[], None]] = {}
+        self.keyMap: dict[str, Callable[[], None]] = {}
         self._setKeyMap()
         self.qButtons = set()
         self._visitStack: list[Control] = []   # 浏览栈
@@ -44,15 +44,15 @@ class SUI:
                 os.mkdir(SOUNDS_PATH)
 
         # 启动按键监听
-        keyboard.Listener(on_press=self.onKeyPress).start()
+        keyboard.hook(self.onKeyPress)
         print(f"SUI 按键监控开始运行")
 
     def _setKeyMap(self):
-        self.keyMap[Key.right] = self._onPressNext
-        self.keyMap[Key.left] = self._onPressLast
-        self.keyMap[Key.enter] = self._onPressEnter
-        self.keyMap[Key.esc] = self._onPressBack
-        self.keyMap[Key.space] = self._onPressPause
+        self.keyMap['right'] = self._onPressNext
+        self.keyMap['left'] = self._onPressLast
+        self.keyMap['enter'] = self._onPressEnter
+        self.keyMap['esc'] = self._onPressBack
+        self.keyMap['space'] = self._onPressPause
 
 
     def onSoundPlayEnd(self):
@@ -88,15 +88,16 @@ class SUI:
         self._album = album
 
     # 按键监听回调
-    def onKeyPress(self, key):
+    def onKeyPress(self, event):
         if self._home is None:
             self.insAnnc('系统未初始化')
             print('未设置home')
             return
-        if key in self.keyMap.keys():
-            # print('key mapped!')
-            self.keyMap[key]()
-        print(key)
+        if event.event_type == keyboard.KEY_DOWN:
+            print(f"Key pressed: {event.name}")
+            if event.name in self.keyMap.keys():
+                # print('key mapped!')
+                self.keyMap[event.name]()
 
     def _onPressPause(self):
         if self._album is not None:

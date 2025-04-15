@@ -8,8 +8,6 @@ Description: SUI模块内的具体控件实现模块
 '''
 from SoundManager import SoundManager
 from TTS_manager import TTS_manager
-from typing import Callable
-from pynput.keyboard import Key
 from SUI.BaseControl import *
 from ContentAPI.XiMalaya import *
 

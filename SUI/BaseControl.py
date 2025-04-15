@@ -10,8 +10,6 @@ Description: SUI模块内的控件子模块，定义了
 from typing import TYPE_CHECKING
 from SoundManager import SoundManager
 from TTS_manager import TTS_manager
-from typing import Callable
-from pynput.keyboard import Key, KeyCode
 if TYPE_CHECKING:
     from SUI.SuiManager import SUI
 
@@ -23,7 +21,6 @@ class Control:
         self.UI_mgr = UI_mgr
         self.title = title
         self.father = father
-        self.keyMap: dict[KeyCode, Callable[[], None]] = {}
 
     def onSelect(self):
         self.UI_mgr.insAnnc(self.title)

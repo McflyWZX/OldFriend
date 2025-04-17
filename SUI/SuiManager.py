@@ -3,7 +3,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-17 23:07:55
+LastEditTime: 2025-04-17 23:12:21
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
@@ -40,7 +40,7 @@ class SUI:
         self._setKeyMap()
         self.qButtons = set()
         self._visitStack: list[Control] = []   # 浏览栈
-        self._home: Control = []   # 主页
+        self._home: Control = None   # 主页
         self._album: SoundAlbum = None     # 主加载的专辑
 
         if not os.path.isdir(SOUNDS_PATH):
@@ -163,7 +163,7 @@ class SUI:
 
     def _exitActivity(self):
         if len(self._visitStack) <= 1:
-            self.setHome(self.home)
+            self.setHome(self._home)
             return
         self._visitStack[-1].onExit()
         self._visitStack.pop()

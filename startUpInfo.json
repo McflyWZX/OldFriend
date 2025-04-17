@@ -1,0 +1,10 @@
+{
+    "welcomeMessage": "欢迎使用老友纯声音按键交互终端设备！",
+    "version": "V1点1点1",
+    "updatedTime": "2025年4月17日",
+    "changes": [
+        "增加了启动提示",
+        "优化用户体验"
+    ],
+    "annced": "True"
+}

@@ -3,7 +3,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-10 22:20:28
+LastEditTime: 2025-04-17 23:07:55
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
@@ -19,8 +19,11 @@ from SUI.Controls import *
 from ContentAPI.XiMalaya import XiMalaya
 from urllib import request
 import os
+import json
+import time
 
 SOUNDS_PATH = './sounds'
+STARTUP_INTFO_PATH = './startUpInfo.json'
 
 '''
 description: 提供SUI的创建和管理功能，负责SUI内部控件数据流传递.
@@ -43,9 +46,49 @@ class SUI:
         if not os.path.isdir(SOUNDS_PATH):
                 os.mkdir(SOUNDS_PATH)
 
+        # 启动信息
+        startUpMessage = self._parseStartupInfo()
+        if startUpMessage != '':
+            self.insAnnc(startUpMessage, needBlock=True)
+            time.sleep(0.5)
+
         # 启动按键监听
         keyboard.hook(self.onKeyPress)
         print(f"SUI 按键监控开始运行")
+
+    '''
+    description: 将启动信息解析为字典，并转化为启动提示欢迎语句
+    param {*} self
+    '''
+    def _parseStartupInfo(self) -> str:
+        startUpMessage = ''
+        if not os.path.isfile(STARTUP_INTFO_PATH):
+            print("启动信息文件不存在")
+            return startUpMessage
+        try:
+            with open(STARTUP_INTFO_PATH, 'r', encoding='utf-8') as f:
+                startupInfo = json.load(f)
+            # 如果更新信息已经播报过了，则不再播报
+            if startupInfo['annced'] == 'True':
+                startUpMessage = startupInfo["welcomeMessage"]
+            else:
+                welcomeMessage: str = startupInfo["welcomeMessage"]
+                version: str = startupInfo["version"]
+                updatedTime: str = startupInfo["updatedTime"]
+                changes: list[str] = startupInfo["changes"]
+                startUpMessage = f"{welcomeMessage}，当前版本为：{version}，更新时间为{updatedTime}。"
+                startUpMessage += "更新内容有："
+                for change in changes:
+                    startUpMessage += change + '，'
+                startUpMessage += "请享用本程序。"
+            print(f"启动信息加载成功: {startUpMessage}")
+            # 是否播报过更新为True
+            startupInfo['annced'] = 'True'
+            with open(STARTUP_INTFO_PATH, 'w', encoding='utf-8') as f:
+                json.dump(startupInfo, f, ensure_ascii=False, indent=4)
+        except Exception as e:
+            print(f"启动信息加载失败: {e}")
+        return startUpMessage
 
     def _setKeyMap(self):
         self.keyMap['right'] = self._onPressNext

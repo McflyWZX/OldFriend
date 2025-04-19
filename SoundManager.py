@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-10 22:20:08
+LastEditTime: 2025-04-19 16:39:08
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
@@ -30,9 +30,18 @@ class SoundManager:
         pygame.mixer.music.set_volume(self.mainVolume)
         pygame.mixer.music.play(loops=0)
         self.pauseFlag = False
+        self.pauseOutter = False
 
-    def toggleOutterPause(self):
-        pass
+    def toggleOutterPause(self) -> str:
+        self.pauseOutter = not self.pauseOutter
+        if self.pauseOutter == True:
+            print('暂停')
+            self.pause()
+            return '暂停'
+        else:
+            print('恢复')
+            self.resume()
+            return '恢复'
 
     def pause(self):
         if self.mainMusicPath is None or self.pauseFlag is True:
@@ -46,6 +55,9 @@ class SoundManager:
 
     def resume(self):
         if self.mainMusicPath is None or self.pauseFlag is False:
+            return
+        # 恢复时需检查此时外部是否要求暂停
+        if self.pauseOutter == True:
             return
         # pygame.mixer.music.load(MAIN_MUSIC)
         # pygame.mixer.music.play(start=mian_music_pos_g, fade_ms=FADE_DURATION)

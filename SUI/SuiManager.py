@@ -3,7 +3,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-19 11:28:48
+LastEditTime: 2025-04-19 16:37:48
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
@@ -173,7 +173,8 @@ class SUI:
 
     def _onPressPause(self):
         if self._album is not None:
-            pass
+            opStr = self.soundMgr.toggleOutterPause()
+            self.insAnnc(opStr)
 
     def _onPressBack(self):
         self._visitStack[-1].onExit()

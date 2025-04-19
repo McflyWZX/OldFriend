@@ -3,7 +3,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-17 23:12:21
+LastEditTime: 2025-04-19 11:28:48
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
@@ -24,6 +24,7 @@ import time
 
 SOUNDS_PATH = './sounds'
 STARTUP_INTFO_PATH = './startUpInfo.json'
+KEY_MAP_JSON = './keyMap.json'
 
 '''
 description: 提供SUI的创建和管理功能，负责SUI内部控件数据流传递.
@@ -37,7 +38,8 @@ class SUI:
         self.TTS_mgr = TTS_mgr
         self.xAPI = xAPI
         self.keyMap: dict[str, Callable[[], None]] = {}
-        self._setKeyMap()
+        if self._parseAndSetKeyMap() != 0:
+            return
         self.qButtons = set()
         self._visitStack: list[Control] = []   # 浏览栈
         self._home: Control = None   # 主页
@@ -90,13 +92,40 @@ class SUI:
             print(f"启动信息加载失败: {e}")
         return startUpMessage
 
-    def _setKeyMap(self):
-        self.keyMap['right'] = self._onPressNext
-        self.keyMap['left'] = self._onPressLast
-        self.keyMap['enter'] = self._onPressEnter
-        self.keyMap['esc'] = self._onPressBack
-        self.keyMap['space'] = self._onPressPause
+    '''
+    description: 根据环境变量'OLD_FRIEND_KEY_MAP_TYPE'，选择KEY_MAP_JSON中的按键映射
+    param {*} self
+    '''    
+    def _parseAndSetKeyMap(self):
+        if not os.path.isfile(KEY_MAP_JSON):
+            print("Keymap file not found.")
+            return -1
 
+        try:
+            with open(KEY_MAP_JSON, 'r', encoding='utf-8') as f:
+                keyMapStrs: dict = json.load(f)
+                keyMapType = os.getenv('OLD_FRIEND_KEY_MAP_TYPE', 'default')
+                if keyMapType in keyMapStrs.keys():
+                    keyMapStr = keyMapStrs[keyMapType]
+                    print(f"Loaded keymap for type: {keyMapType}")
+                    self._setKeyMap(keyMapStr)
+                    return 0
+                    
+        except Exception as e:
+            print(f"Failed to load keymap: {e}")
+        return -1
+
+    '''
+    description: 根据按键映射表设置按键映射
+    param {*} self
+    param {dict} keyMapStr: 储存有 按键功能: 按键名称映射
+    '''    
+    def _setKeyMap(self, keyMapStr: dict):
+        self.keyMap[keyMapStr['keyNext']] = self._onPressNext
+        self.keyMap[keyMapStr['keyLast']] = self._onPressLast
+        self.keyMap[keyMapStr['keyEnter']] = self._onPressEnter
+        self.keyMap[keyMapStr['keyEsc']] = self._onPressBack
+        self.keyMap[keyMapStr['keyPause']] = self._onPressPause
 
     def onSoundPlayEnd(self):
         pass

@@ -1,0 +1,16 @@
+{
+    "default": {
+        "keyNext": "right",
+        "keyLast": "left",
+        "keyEnter": "enter",
+        "keyEsc": "esc",
+        "keyPause": "space"
+    },
+    "lightKeyBoard": {
+        "keyNext": "right",
+        "keyLast": "left",
+        "keyEnter": "enter",
+        "keyEsc": "backspace",
+        "keyPause": "down"
+    }
+}

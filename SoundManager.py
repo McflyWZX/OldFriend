@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-19 16:39:08
+LastEditTime: 2025-04-21 22:24:04
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
@@ -36,14 +36,26 @@ class SoundManager:
         self.pauseOutter = not self.pauseOutter
         if self.pauseOutter == True:
             print('暂停')
-            self.pause()
+            self._pause()
             return '暂停'
         else:
             print('恢复')
-            self.resume()
+            self._resume()
             return '恢复'
+        
+    def outterPause(self) -> str:
+        self.pauseOutter = True
+        print('暂停')
+        self._pause()
+        return '暂停'
+    
+    def outterResume(self) -> str:
+        self.pauseOutter = True
+        print('恢复')
+        self._resume()
+        return '恢复'
 
-    def pause(self):
+    def _pause(self):
         if self.mainMusicPath is None or self.pauseFlag is True:
             return
         # 手动控制暂停位置的方法，这里我们直接调用库函数
@@ -53,7 +65,7 @@ class SoundManager:
         pygame.mixer.music.pause()
         self.pauseFlag = True
 
-    def resume(self):
+    def _resume(self):
         if self.mainMusicPath is None or self.pauseFlag is False:
             return
         # 恢复时需检查此时外部是否要求暂停
@@ -99,7 +111,7 @@ class SoundManager:
     return {*}
     '''
     def _asyncPlayAnnc(self, annc_path: str):
-        self.pause()
+        self._pause()
         # 立刻打断之前的播报，不混音
         pygame.mixer.stop()
         annc = pygame.mixer.Sound(annc_path)
@@ -109,5 +121,5 @@ class SoundManager:
         # 更精准的播完检测（使用Channel对象）
         while channel and channel.get_busy():
             pygame.time.wait(50)  # 改用pygame时钟等待
-        self.resume()
+        self._resume()
             

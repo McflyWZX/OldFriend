@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-10 22:21:35
+LastEditTime: 2025-04-21 22:30:19
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -62,6 +62,8 @@ class SoundAlbum(Item):
             # TODO: 播放“专辑加载失败”
             print('专辑加载失败')
             return
+        # 暂停主声音的播放，防止播报完还在加载时又播放主声音
+        self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
         self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         print('进入了：%s'%self.title)
@@ -74,6 +76,8 @@ class SoundAlbum(Item):
     def onGoNext(self):
         self.lastPlayIndex += 1
         self.lastPlayIndex %= len(self.sounds)
+        # 暂停主声音的播放，防止播报完还在加载时又播放主声音
+        self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
         self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
@@ -81,6 +85,8 @@ class SoundAlbum(Item):
     def onGoLast(self):
         self.lastPlayIndex += (-1 + len(self.sounds))
         self.lastPlayIndex %= len(self.sounds)
+        # 暂停主声音的播放，防止播报完还在加载时又播放主声音
+        self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
         self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)

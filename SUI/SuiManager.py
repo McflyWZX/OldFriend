@@ -35,6 +35,7 @@ description: 提供SUI的创建和管理功能，负责SUI内部控件数据流�
 class SUI:
     def __init__(self, soundMgr:SoundManager, TTS_mgr: TTS_manager, xAPI: XiMalaya):
         self.soundMgr = soundMgr
+        self.soundMgr.setEndEventHandler(self.onSoundPlayEnd)
         self.TTS_mgr = TTS_mgr
         self.xAPI = xAPI
         self.keyMap: dict[str, Callable[[], None]] = {}
@@ -128,7 +129,8 @@ class SUI:
         self.keyMap[keyMapStr['keyPause']] = self._onPressPause
 
     def onSoundPlayEnd(self):
-        pass
+        if self._album is not None:
+            self._album.onTrackPlayFinish()
 
     def insAnnc(self, txt: str, needBlock=False):
         audio = self.TTS_mgr.tts(txt)

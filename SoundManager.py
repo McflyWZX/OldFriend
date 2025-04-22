@@ -2,13 +2,17 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:02
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-21 22:24:04
+LastEditTime: 2025-04-22 22:59:02
 FilePath: \GitClone\OldFriend\SoundManager.py
 Description: 声音播放管理系统，实现了主声音的播放暂停和连续播功能及操作声插播功能
 '''
 import pygame
 import time
 import threading
+from typing import Callable
+
+MAIN_MUSIC_END = pygame.USEREVENT + 20
+MAIN_MUSIC_END = pygame.USEREVENT + 20
 
 class SoundManager:
     def __init__(self):
@@ -20,6 +24,12 @@ class SoundManager:
         self.mainVolume = 1
         pygame.mixer.init()
         pygame.init()
+        self.endEventHandler = None
+        endEventCaptureThread = threading.Thread(
+            target=self._endEventCapture,
+            daemon=True  # 跟随主线程退出
+        )
+        endEventCaptureThread.start()
 
     def playMainMusic(self, musicPath: str = None):
         self.mainMusicPath = musicPath or self.mainMusicPath
@@ -27,10 +37,23 @@ class SoundManager:
             print('Info: 尝试在没指定路径的情况下播放音乐')
             return
         pygame.mixer.music.load(self.mainMusicPath)
+        pygame.mixer.music.set_endevent(MAIN_MUSIC_END)
         pygame.mixer.music.set_volume(self.mainVolume)
         pygame.mixer.music.play(loops=0)
         self.pauseFlag = False
         self.pauseOutter = False
+
+    def _endEventCapture(self):
+        while True:
+            for event in pygame.event.get():
+                if event.type == MAIN_MUSIC_END:
+                    print('Info: 主音乐播放完毕')
+                    if self.endEventHandler is not None:
+                        self.endEventHandler()
+            pygame.time.wait(1000)
+
+    def setEndEventHandler(self, handler: Callable):
+        self.endEventHandler = handler
 
     def toggleOutterPause(self) -> str:
         self.pauseOutter = not self.pauseOutter

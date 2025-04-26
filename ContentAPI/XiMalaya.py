@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-25 23:06:09
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-10 22:22:05
+LastEditTime: 2025-04-26 15:21:56
 FilePath: \OldFriend\ContentAPI\XiMalaya.py
 Description: 喜马拉雅api实现
 '''
@@ -147,7 +147,7 @@ class XiMalaya:
             return None
         albums = []
         for albumsJson in albumsJsons:
-            if vipOk and albumsJson['vipType'] == 1:
+            if vipOk and albumsJson['vipType'] >= 1:
                 continue
             albums.append(XiMalayaAlbumInfo(albumsJson))
         return albums if len(albums) > 0 else None
@@ -196,7 +196,7 @@ class XiMalaya:
             # 状态检查
             response.raise_for_status()
             # 解析JSON
-            return self._processAlbumsDict(response.json())
+            return self._processAlbumsDict(response.json(), vipOk)
             # return response.json()
             
         except requests.exceptions.HTTPError as e:

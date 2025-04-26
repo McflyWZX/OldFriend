@@ -1,9 +1,10 @@
 {
     "welcomeMessage": "欢迎使用老友纯声音按键交互终端设备！",
-    "version": "V1点2点1",
-    "updatedTime": "2025年4月22日",
+    "version": "V1点2点2",
+    "updatedTime": "2025年4月26日",
     "changes": [
-        "新增播完自动续播功能"
+        "新增播完自动续播功能",
+        "过滤vip栏目"
     ],
     "annced": "False"
 }

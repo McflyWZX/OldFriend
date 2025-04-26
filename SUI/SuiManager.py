@@ -191,7 +191,10 @@ class SUI:
     def _onPressEnter(self):
         activity = self._visitStack[-1].onPressEnter()
         if activity is not None:
-            self.goVisitTo(activity)
+            ret = self.goVisitTo(activity)
+            if ret is not None and ret == -1:
+                self._onPressBack()
+                
 
     def _exitActivity(self):
         if len(self._visitStack) <= 1:
@@ -205,8 +208,8 @@ class SUI:
 
     def goVisitTo(self, activity: Control):
         self._visitStack.append(activity)
-        self._visitStack[-1].onEnter()
         print('切换到了%s'%activity)
+        return self._visitStack[-1].onEnter()
 
     def setHome(self, activity: Control):
         self._home = activity

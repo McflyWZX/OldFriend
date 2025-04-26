@@ -106,9 +106,9 @@ class ItemList(Control):
         print('进入了：%s'%self.title)
         items = self._getItems()
         if len(items) == 0:
-            # TODO: 播放“该分类无内容”
             print('该分类无内容')
-            return
+            self.UI_mgr.insAnnc('该分类无内容', needBlock=True)
+            return -1
         items[self.index].onSelect()
 
     '''
@@ -116,16 +116,32 @@ class ItemList(Control):
     '''    
     def _getItems(self):
         return self.items
-
-    def onGoNext(self):
+    
+    def _getNextItem(self):
         items = self._getItems()
+        if len(items) <= 0:
+            return None
         self.index += 1
         self.index %= len(items)
-        items[self.index].onSelect()
-
-    def onGoLast(self):
+        return items[self.index]
+    
+    def _getLastItem(self):
         items = self._getItems()
+        if len(items) <= 0:
+            return None
         self.index += (-1 + len(items))
         self.index %= len(items)
-        items[self.index].onSelect()
+        return items[self.index]
+
+    def onGoNext(self):
+        item = self._getNextItem()
+        if item is None:
+            return
+        item.onSelect()
+
+    def onGoLast(self):
+        item = self._getLastItem()
+        if item is None:
+            return
+        item.onSelect()
 

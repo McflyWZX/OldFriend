@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-21 22:30:19
+LastEditTime: 2025-04-26 15:34:56
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -11,12 +11,11 @@ from TTS_manager import TTS_manager
 from SUI.BaseControl import *
 from ContentAPI.XiMalaya import *
 
+DEFAULT_DESC = '这个内容没有介绍'
+
 '''
 description: 菜单，储存SoundContent或者子Menu
 '''
-
-DEFAULT_DESC = '这个内容没有介绍'
-
 class Menu(ItemList):
     def __init__(self, UI_mgr, title: str, desc: str="", father: Control=None, localMenu: list[Item]=[], ximalayaTag: str=None):
         super().__init__(UI_mgr, title)
@@ -36,6 +35,8 @@ class Menu(ItemList):
         if self.ximalayaTag is None:
             return []
         self.remoteAlbum = self.UI_mgr.xAPI.searchAlbums(self.title)
+        if self.remoteAlbum is None or len(self.remoteAlbum) == 0:
+            return []
         return [SoundAlbum(self.UI_mgr, album.title, album.id) for album in self.remoteAlbum]
 
 '''

@@ -42,6 +42,8 @@ class TTS_manager:
 
     def tts(self, text: str):
         self.ttsDb = sqlite3.connect(self.ttsDbPath)
+        text = text.replace('丨', '，')
+        text = text.replace('|', '，')
         ntext = self._detectAndConvertDates(text)
         if text != ntext:
             print(text)

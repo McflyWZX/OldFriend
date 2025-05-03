@@ -10,7 +10,6 @@ Description: SUI(Sound user interface)，是纯声音用户交互的实现。
 '''
 from SoundManager import SoundManager
 from TTS_manager import TTS_manager
-from pynput import keyboard
 from typing import Callable
 import keyboard
 import copy
@@ -168,10 +167,18 @@ class SUI:
             print('未设置home')
             return
         if event.event_type == keyboard.KEY_DOWN:
+            # 解挂按键处理函数，防止按键囤积
+            keyboard.unhook_all()
+            # 记录按键按下的时间
+            pressedTime = time.time()
             print(f"Key pressed: {event.name}")
             if event.name in self.keyMap.keys():
                 # print('key mapped!')
                 self.keyMap[event.name]()
+            executionTime = time.time() - pressedTime
+            # 最少延迟1s钟
+            delayTime = max(1 - executionTime, 0.1)
+            keyboard.call_later(lambda: keyboard.hook(self.onKeyPress), delay=delayTime)
 
     def _onPressPause(self):
         if self._album is not None:

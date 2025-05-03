@@ -21,9 +21,15 @@ class Control:
         self.UI_mgr = UI_mgr
         self.title = title
         self.father = father
+        # 防止后续设置index时产生累积效应，记录原始标题
+        self.rawTitle = title
 
     def onSelect(self):
         self.UI_mgr.insAnnc(self.title)
+
+    def setIndex(self, index):
+        if index != -1:
+            self.title = str(index) + '，' + self.rawTitle
 
     '''
     description: 进入（浏览）到改控件时调用

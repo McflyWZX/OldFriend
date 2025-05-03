@@ -26,6 +26,11 @@ class Menu(ItemList):
     def _getItems(self):
         if len(self.items) <= 0:
             self.items = self._getLocalMenu() + self._getRemoteMenu()
+            # 设置序号以播报时更能够了解自身位置
+            i = 1
+            for item in self.items:
+                item.setIndex(i)
+                i += 1
         return self.items
 
     def _getLocalMenu(self):

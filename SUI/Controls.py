@@ -37,12 +37,17 @@ class Menu(ItemList):
         return self.localMenu
     
     def _getRemoteMenu(self):
+        res = []
         if self.ximalayaTag is None:
-            return []
+            return res
         self.remoteAlbum = self.UI_mgr.xAPI.searchAlbums(self.title)
         if self.remoteAlbum is None or len(self.remoteAlbum) == 0:
-            return []
-        return [SoundAlbum(self.UI_mgr, album.title, album.id) for album in self.remoteAlbum]
+            return res
+        for album in self.remoteAlbum:
+            if album not in self._getLocalMenu():
+                res.append(SoundAlbum(self.UI_mgr, album.title, album.id))
+
+        return res
 
 '''
 description: 声音集，包含具体的音源集ID，它
@@ -96,6 +101,9 @@ class SoundAlbum(Item):
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
         self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
         self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
+
+    def __eq__(self:'SoundAlbum', other:'SoundAlbum'):
+        return isinstance(other, SoundAlbum) and self.albumID == other.albumID
 
 '''
 description: 声音内容，包含具体的音源ID，当点击时替换主音乐并更新SoundAlbum状态

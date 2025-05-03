@@ -186,6 +186,7 @@ class SUI:
             self.insAnnc(opStr)
 
     def _onPressBack(self):
+        self.soundMgr.outterPause()
         self.insAnnc('返回', needBlock=True)
         time.sleep(0.1)
         self._visitStack[-1].onExit()

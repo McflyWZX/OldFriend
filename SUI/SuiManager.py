@@ -186,13 +186,23 @@ class SUI:
             self.insAnnc(opStr)
 
     def _onPressBack(self):
+        self.insAnnc('返回', needBlock=True)
+        time.sleep(0.1)
         self._visitStack[-1].onExit()
         self._exitActivity()
 
     def _onPressNext(self):
+        if isinstance(self._visitStack[-1], SoundAlbum):
+            self.insAnnc('下一集', needBlock=True)
+        else:
+            self.insAnnc('下一个', needBlock=True)
         self._visitStack[-1].onGoNext()
 
     def _onPressLast(self):
+        if isinstance(self._visitStack[-1], SoundAlbum):
+            self.insAnnc('上一集', needBlock=True)
+        else:
+            self.insAnnc('上一个', needBlock=True)
         self._visitStack[-1].onGoLast()
 
     def _onPressEnter(self):

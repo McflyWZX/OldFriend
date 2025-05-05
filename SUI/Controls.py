@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-26 15:34:56
+LastEditTime: 2025-05-06 00:18:15
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -64,6 +64,7 @@ class SoundAlbum(Item):
 
     def onSelect(self):
         super().onSelect()
+        print('ID：%s'%self.albumID)
 
     def onEnter(self):
         super().onEnter()

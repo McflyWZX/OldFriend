@@ -25,11 +25,12 @@ if TEST_TYPE == 'TOTAL':
     sui = SUI(soundManager, ttsManager, xAPI)
     
     newsReport = SoundAlbum(sui, '新闻联播', 31923706)
+    newsOneAddOne = SoundAlbum(sui, '新闻一加一', 33234782)
     morningCaffe = SoundAlbum(sui, '声动早咖啡', 51076156)
 
 
     books = Menu(sui, '听书', ximalayaTag='听书')
-    news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe], ximalayaTag='新闻')
+    news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe, newsOneAddOne], ximalayaTag='新闻')
     chinaHistory = Menu(sui, '中国历史', ximalayaTag='中国历史')
     story = Menu(sui, '小说', ximalayaTag='小说')
     home = Menu(sui, '主页', localMenu=[news, books, chinaHistory, story])

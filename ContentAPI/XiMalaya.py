@@ -147,7 +147,7 @@ class XiMalaya:
             return None
         albums = []
         for albumsJson in albumsJsons:
-            if vipOk and albumsJson['vipType'] >= 1:
+            if vipOk == False and (albumsJson['vipType'] >= 1 or albumsJson['is_paid'] == True):
                 continue
             albums.append(XiMalayaAlbumInfo(albumsJson))
         return albums if len(albums) > 0 else None

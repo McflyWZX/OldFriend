@@ -1,9 +1,10 @@
 {
     "welcomeMessage": "欢迎使用老友纯声音按键交互终端设备！",
-    "version": "V1点3点1",
+    "version": "V1点3点2",
     "updatedTime": "2025年5月6日",
     "changes": [
         "固定了新闻一加一",
+        "修正过滤vip的方法",
         "日志调整"
     ],
     "annced": "False"

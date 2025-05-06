@@ -85,7 +85,6 @@ class Item(Control):
 
     def onEnter(self):
         print('进入了：%s'%self.title)
-        pass
 
 '''
 description: 表项列表控件，当被选中时，默认播报列表的名字，拥有一个管理标项的list

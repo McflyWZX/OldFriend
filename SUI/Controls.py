@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-05-06 22:33:11
+LastEditTime: 2025-05-06 22:38:11
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -70,11 +70,11 @@ class SoundAlbum(Item):
     def onEnter(self):
         super().onEnter()
         self.remoteContent = self.UI_mgr.xAPI.getPlaylist(self.albumID)
-        self.sounds = [SoundContent(self.UI_mgr, track.title, track.trackId, track.playUrl64) for track in self.remoteContent]
-        if len(self.sounds) == 0:
-            # TODO: 播放“专辑加载失败”
+        if self.remoteContent is None or len(self.remoteContent) == 0:
+            self.UI_mgr.insAnnc('专辑加载失败，请稍后再试', needBlock=True)
             print('专辑加载失败')
-            return
+            return -1
+        self.sounds = [SoundContent(self.UI_mgr, track.title, track.trackId, track.playUrl64) for track in self.remoteContent]
         # 暂停主声音的播放，防止播报完还在加载时又播放主声音
         self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放

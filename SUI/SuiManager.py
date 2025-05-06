@@ -3,7 +3,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-26 21:09:29
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-19 16:37:48
+LastEditTime: 2025-05-06 22:19:16
 FilePath: \OldFriend\SUI\SUI.py
 Description: SUI(Sound user interface)，是纯声音用户交互的实现。
              其基于可播报线性列表选项及快捷按键操作实现。
@@ -140,7 +140,7 @@ class SUI:
 
     def playSound(self, path: str=None, url: str=None):
         # url有效，说明需要下载
-        if url is not None:
+        if url is not None and url != '':
             path = path or SOUNDS_PATH + '/' + str(self._album.albumID)
             if not os.path.isdir(path):
                 os.mkdir(path)
@@ -148,14 +148,23 @@ class SUI:
             if os.path.isfile(path):
                 self.soundMgr.playMainMusic(path)
                 return
-            request.urlretrieve(url, path)
+            # 下载文件，使用try except捕获异常，增强鲁棒性
+            try:
+                request.urlretrieve(url, path)
+                print('下载成功: ' + url)
+            except Exception as e:
+                print('下载失败: ' + url + '，错误信息：' + str(e))
+                self.insAnnc('下载失败，请检查网络连接', needBlock=True)
+                return
             if os.path.isfile(path):
                 self.soundMgr.playMainMusic(path)
                 return
             else:
-                print('加载失败: ' + url)
+                print('加载失败: ' + path)
+                self.insAnnc('加载文件失败', needBlock=True)
         else:
             print('无url: ' + url)
+            self.insAnnc('加载文件失败，可能是代码有问题，请联系开发人员', needBlock=True)
             
     def setAlbum(self, album: SoundAlbum):
         self._album = album

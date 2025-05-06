@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-05-06 00:18:15
+LastEditTime: 2025-05-06 22:33:11
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -44,8 +44,9 @@ class Menu(ItemList):
         if self.remoteAlbum is None or len(self.remoteAlbum) == 0:
             return res
         for album in self.remoteAlbum:
-            if album not in self._getLocalMenu():
-                res.append(SoundAlbum(self.UI_mgr, album.title, album.id))
+            albumControl = SoundAlbum(self.UI_mgr, album.title, album.id)
+            if albumControl not in self._getLocalMenu():
+                res.append(albumControl)
 
         return res
 
@@ -117,6 +118,7 @@ class SoundContent(Item):
         self.playUrl = playUrl
 
     def onSelect(self, needBlock=False):
+        print('开始播放：%s'%self.title)
         self.UI_mgr.insAnnc(self.title, needBlock)
 
     def onEnter(self):

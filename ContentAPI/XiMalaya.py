@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-25 23:06:09
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-26 15:21:56
+LastEditTime: 2025-05-08 23:57:03
 FilePath: \OldFriend\ContentAPI\XiMalaya.py
 Description: 喜马拉雅api实现
 '''
@@ -10,6 +10,7 @@ import datetime
 import time
 import requests
 from urllib.parse import quote
+from enum import Enum
 
     
 class XiMalayaTrackInfo:
@@ -30,27 +31,6 @@ class XiMalayaTrackInfo:
         res += 'isPaid: ' + str(self.isPaid) + '\r\n'
         res += 'isFree: ' + str(self.isFree) + '\r\n'
         res += 'createTime: ' + self.createTime + '\r\n'
-        return res
-
-    def __repr__(self):
-        return str(self)
-
-class XiMalayaAlbumInfo:
-    def __init__(self, albumJson: dict):
-        self.title = albumJson['title']
-        self.customTitle = albumJson['custom_title'] if 'custom_title' in albumJson.keys() is not None else ''
-        self.id = albumJson['id']
-        self.intro = albumJson['intro']
-        self.vip = albumJson['vipType']
-        self.updateTime = datetime.datetime.fromtimestamp(albumJson['updated_at'] / 1000.0).strftime(f"%Y-%m-%d")
-    
-    def __str__(self):
-        res = '======title: ' + self.title + '======\r\n'
-        res += 'customTitle: ' + self.customTitle + '\r\n'
-        res += 'id: ' + str(self.id) + '\r\n'
-        res += 'intro: ' + self.intro + '\r\n'
-        res += 'vip: ' + str(self.vip) + '\r\n'
-        res += 'updateTime: ' + self.updateTime + '\r\n'
         return res
 
     def __repr__(self):
@@ -140,17 +120,6 @@ class XiMalaya:
         except ValueError as e:
             print(f"JSON解析失败: {str(e)}")
             return None
-
-    def _processAlbumsDict(self, result: dict, vipOk: bool=False):
-        albumsJsons: dict = result['data']['result']['response']['docs']
-        if albumsJsons is None or len(albumsJsons) < 1:
-            return None
-        albums = []
-        for albumsJson in albumsJsons:
-            if vipOk == False and (albumsJson['vipType'] >= 1 or albumsJson['is_paid'] == True):
-                continue
-            albums.append(XiMalayaAlbumInfo(albumsJson))
-        return albums if len(albums) > 0 else None
             
     '''
     description: 
@@ -159,7 +128,7 @@ class XiMalaya:
     param {int} rows: 每页数量(默认为20)
     return {dict}: 解析后的JSON结果
     '''
-    def searchAlbums(self, keyword: str, page=1, rows=20, vipOk: bool=False) -> list[XiMalayaAlbumInfo]:
+    def searchAlbums(self, keyword: str, page=1, rows=20):
         # 编码关键词
         encoded_kw = quote(keyword)
         # 基础URL
@@ -196,8 +165,7 @@ class XiMalaya:
             # 状态检查
             response.raise_for_status()
             # 解析JSON
-            return self._processAlbumsDict(response.json(), vipOk)
-            # return response.json()
+            return response.json()
             
         except requests.exceptions.HTTPError as e:
             print(f"HTTP错误: {e.response.status_code}")
@@ -210,12 +178,114 @@ class XiMalaya:
             print(f"JSON解析失败: {str(e)}")
             return None
 
+class XiMalayaAlbumInfo:
+    def __init__(self, albumJson: dict, index: int=0):
+        self.title = albumJson['title']
+        self.customTitle = albumJson['custom_title'] if 'custom_title' in albumJson else ''
+        self.id = albumJson['id']
+        self.intro = albumJson['intro']
+        self.vip = albumJson['vipType']
+        self.updateTime = datetime.datetime.fromtimestamp(albumJson['updated_at'] / 1000.0).strftime(f"%Y-%m-%d")
+        self.index = index
+    
+    def __str__(self):
+        res = '======title: ' + self.title + '======\r\n'
+        res += 'customTitle: ' + self.customTitle + '\r\n'
+        res += 'index: ' + str(self.index) + '\r\n'
+        res += 'id: ' + str(self.id) + '\r\n'
+        res += 'intro: ' + self.intro + '\r\n'
+        res += 'vip: ' + str(self.vip) + '\r\n'
+        res += 'updateTime: ' + self.updateTime + '\r\n'
+        return res
+
+    def __repr__(self):
+        return str(self)
+
+class XiMalayaAlbumListType(Enum):
+    SEARCH = 1
+    CATGORY = 2
+
+'''
+description: 喜马拉雅专辑列表类，可以设置搜索或分类两种获取方式，不可以跳页
+             这里是按页往下走
+             原生page从1开始，内部从0开始，要处理一下
+'''
+class XiMalayaAlbumList:
+    def __init__(self, keyword: str, listType: XiMalayaAlbumListType, xAPI: XiMalaya):
+        self.keyword = keyword
+        self.numsPerPage = 20
+        self.totalPage = -1
+        self.nowPage = 0
+        # 用list来管理页面，可以逐步往后跳
+        self.albums: list[list[XiMalayaAlbumInfo]] = []
+        self.listType = listType
+        if self.listType == XiMalayaAlbumListType.SEARCH:
+            self.processDictFunc = self._processSearchDict
+            self.getAlbumFunc = xAPI.searchAlbums
+        else:
+            # 当前其它方案还没给出，默认用搜索
+            self.processDictFunc = self._processSearchDict
+            self.getAlbumFunc = xAPI.searchAlbums
+
+    '''
+    description: 处理搜索得到的json数据
+    param {int} page
+    param {dict} result
+    param {bool} vipOk
+    return {*} None：获取失败
+    return {*} List：获取到的信息列表
+    '''
+    def _processSearchDict(self, page: int, result: dict, vipOk: bool=False):
+        if result is None:
+            print(f"喜马拉雅API搜索返回None")
+            return None
+        self.totalPage: int = result.get('data', {}).get('result', {}).get('response', {}).get('totalPage', -1)
+        if self.totalPage == -1:
+            print(f"喜马拉雅API搜索结果totalPage获取失败")
+            return None
+        albumsJsons: dict = result.get('data', {}).get('result', {}).get('response', {}).get('docs')
+        if not albumsJsons or len(albumsJsons) < 1:
+            print(f"喜马拉雅API搜索结果为空")
+            return None
+        albums = []
+        index = self.numsPerPage * page   # 从0开始
+        for albumsJson in albumsJsons:
+            index += 1
+            if vipOk == False and (albumsJson['vipType'] >= 1 or albumsJson['is_paid'] == True):
+                continue
+            albums.append(XiMalayaAlbumInfo(albumsJson, index - 1))
+        return albums if len(albums) > 0 else None
+    
+    '''
+    description: 处理搜索得到的json数据
+    param {int} page
+    param {dict} result
+    param {bool} vipOk
+    return {*} None：获取失败
+    return {*} List：获取到的信息列表
+    '''    
+    def getNextPage(self) -> list[XiMalayaAlbumInfo]:
+        if self.nowPage < len(self.albums):
+            return self.albums[self.nowPage]
+        newPageJson = self.getAlbumFunc(self.keyword, self.nowPage + 1, self.numsPerPage)
+        if newPageJson is None:
+            return None
+        newPage = self.processDictFunc(self.nowPage, newPageJson)
+        self.albums.append(newPage)
+        self.nowPage += 1
+        return newPage
+
+    
+    def __str__(self):
+        res = '======keyword: ' + self.keyword + '======\r\n'
+        return res
+
+    def __repr__(self):
+        return str(self)
+
 # 示例使用
 if __name__ == "__main__":
-    keyword = "新闻"  # 替换你的关键词
-    xAPI = XiMalaya()
-    result = xAPI.searchAlbums(keyword)
-    playlist = xAPI.getPlaylist(result[2].id, 2)
-
-    if result:
-        print(playlist)
+    xAlbums = XiMalayaAlbumList('新闻', XiMalayaAlbumListType.SEARCH, XiMalaya())
+    print(xAlbums.getNextPage())
+    print(xAlbums.getNextPage())
+    print(xAlbums.getNextPage())

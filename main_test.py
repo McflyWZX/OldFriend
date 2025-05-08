@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-02-24 22:41:28
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-04-08 23:05:41
+LastEditTime: 2025-05-08 23:42:55
 FilePath: \GitClone\OldFriend\main_test.py
 Description: OldFriend技术测试场
 '''
@@ -27,11 +27,12 @@ if TEST_TYPE == 'TOTAL':
     newsReport = SoundAlbum(sui, '新闻联播', 31923706)
     newsOneAddOne = SoundAlbum(sui, '新闻一加一', 33234782)
     morningCaffe = SoundAlbum(sui, '声动早咖啡', 51076156)
+    morningNews = SoundAlbum(sui, '早啊！新闻来了', 31903470)
 
     fourSister = SoundAlbum(sui, '陈忠实小说《四妹子》', 37209158)
 
     books = Menu(sui, '听书', ximalayaTag='听书')
-    news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe, newsOneAddOne], ximalayaTag='新闻')
+    news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe, morningNews, newsOneAddOne], ximalayaTag='新闻')
     chinaHistory = Menu(sui, '中国历史', ximalayaTag='中国历史')
     story = Menu(sui, '小说', localMenu=[fourSister], ximalayaTag='小说')
     home = Menu(sui, '主页', localMenu=[news, books, chinaHistory, story])

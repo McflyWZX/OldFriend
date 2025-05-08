@@ -2,7 +2,7 @@
 Author: Mcfly coolmcfly@qq.com
 Date: 2025-03-09 22:02:01
 LastEditors: Mcfly coolmcfly@qq.com
-LastEditTime: 2025-05-06 22:38:11
+LastEditTime: 2025-05-08 23:32:39
 FilePath: \OldFriend\SUI\Controls.py
 Description: SUI模块内的具体控件实现模块
 '''
@@ -20,21 +20,63 @@ class Menu(ItemList):
     def __init__(self, UI_mgr, title: str, desc: str="", father: Control=None, localMenu: list[Item]=[], ximalayaTag: str=None):
         super().__init__(UI_mgr, title)
         self.localMenu = localMenu
+        self._setLocalMenuIndex()
+        if ximalayaTag is None:
+            self.xAlbumList = None
+        else:
+            self.xAlbumList = XiMalayaAlbumList(ximalayaTag, XiMalayaAlbumListType.SEARCH, UI_mgr.xAPI)
         self.ximalayaTag = ximalayaTag
-        self.items = []
+        self.items = self._getLocalMenu()
 
+    def _setLocalMenuIndex(self):
+        i = 1
+        for item in self.localMenu:
+            item.setIndex(i)
+            i += 1
+
+    def _extendRemoteMenu(self):
+        print('开始拓展列表')
+        if self.xAlbumList is None:
+            return
+        newAlbumInfos = self.xAlbumList.getNextPage()
+        if newAlbumInfos is None or len(newAlbumInfos) == 0:
+            return
+        startIndex = self.items[-1].index + 1 if len(self.items) > 0 else 1
+        # 设置序号以播报时更能够了解自身位置
+        i = startIndex
+        for albumInfo in newAlbumInfos:
+            albumControl = SoundAlbum(self.UI_mgr, albumInfo.title, albumInfo.id)
+            if albumControl not in self._getLocalMenu():
+                albumControl.setIndex(i)
+                i += 1
+                self.items.append(albumControl)
+        print('获取到了%d个专辑'%(i - startIndex))
+        
     def _getItems(self):
         if len(self.items) <= 0:
-            self.items = self._getLocalMenu() + self._getRemoteMenu()
-            # 设置序号以播报时更能够了解自身位置
-            i = 1
-            for item in self.items:
-                item.setIndex(i)
-                i += 1
+            self._extendRemoteMenu()
         return self.items
 
     def _getLocalMenu(self):
         return self.localMenu
+    
+    def _getNextItem(self):
+        items = self._getItems()
+        if len(items) <= 0:
+            return None
+        if self.visitIndex + 1 >= len(items):
+            self._extendRemoteMenu()
+        self.visitIndex += 1
+        self.visitIndex = min(self.visitIndex, len(items) - 1)    # 防止意外
+        return items[self.visitIndex]
+    
+    def _getLastItem(self):
+        items = self._getItems()
+        if len(items) <= 0:
+            return None
+        self.visitIndex -= 1
+        self.visitIndex = max(0, self.visitIndex)
+        return items[self.visitIndex]
     
     def _getRemoteMenu(self):
         res = []

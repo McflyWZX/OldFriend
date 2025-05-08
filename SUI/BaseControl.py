@@ -21,6 +21,7 @@ class Control:
         self.UI_mgr = UI_mgr
         self.title = title
         self.father = father
+        self.index = -1
         # 防止后续设置index时产生累积效应，记录原始标题
         self.rawTitle = title
 
@@ -30,6 +31,7 @@ class Control:
     def setIndex(self, index):
         if index != -1:
             self.title = str(index) + '，' + self.rawTitle
+            self.index = index
 
     '''
     description: 进入（浏览）到改控件时调用
@@ -93,7 +95,7 @@ class ItemList(Control):
     def __init__(self, UI_mgr: 'SUI', title='未知栏目'):
         super().__init__(UI_mgr, title)
         self.items:list[Item] = []
-        self.index = 0
+        self.visitIndex = 0
 
     def onSelect(self):
         super().onSelect()
@@ -105,7 +107,7 @@ class ItemList(Control):
             # TODO: 播放“未选中任何内容”
             print('未选中任何内容')
             return None
-        return items[self.index]
+        return items[self.visitIndex]
 
     def onEnter(self):
         print('进入了：%s'%self.title)
@@ -114,7 +116,7 @@ class ItemList(Control):
             print('该分类无内容')
             self.UI_mgr.insAnnc('该分类无内容', needBlock=True)
             return -1
-        items[self.index].onSelect()
+        items[self.visitIndex].onSelect()
 
     '''
     description: 获取自己的items，默认直接返回，上层可根据需要重构
@@ -126,17 +128,17 @@ class ItemList(Control):
         items = self._getItems()
         if len(items) <= 0:
             return None
-        self.index += 1
-        self.index %= len(items)
-        return items[self.index]
+        self.visitIndex += 1
+        self.visitIndex %= len(items)
+        return items[self.visitIndex]
     
     def _getLastItem(self):
         items = self._getItems()
         if len(items) <= 0:
             return None
-        self.index += (-1 + len(items))
-        self.index %= len(items)
-        return items[self.index]
+        self.visitIndex += (-1 + len(items))
+        self.visitIndex %= len(items)
+        return items[self.visitIndex]
 
     def onGoNext(self):
         item = self._getNextItem()

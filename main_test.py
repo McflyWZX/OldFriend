@@ -29,12 +29,15 @@ if TEST_TYPE == 'TOTAL':
     morningCaffe = SoundAlbum(sui, '声动早咖啡', 51076156)
     morningNews = SoundAlbum(sui, '早啊！新闻来了', 31903470)
 
-    fourSister = SoundAlbum(sui, '陈忠实小说《四妹子》', 37209158)
+    bomb = SoundAlbum(sui, '596秘史，中国原子弹', 10668866)
+
+    bookSanGuo = SoundAlbum(sui, '三国演义，袁阔成先生评书', 42551351)
+    # movieSanGuo = SoundAlbum(sui, '八四年三国演义，电视剧原声', 49440302)
 
     books = Menu(sui, '听书', ximalayaTag='听书')
     news = Menu(sui, '新闻', localMenu=[newsReport, morningCaffe, morningNews, newsOneAddOne], ximalayaTag='新闻')
-    chinaHistory = Menu(sui, '中国历史', ximalayaTag='中国历史')
-    story = Menu(sui, '小说', localMenu=[fourSister], ximalayaTag='小说')
+    chinaHistory = Menu(sui, '中国历史', localMenu=[bookSanGuo], ximalayaTag='中国历史')
+    story = Menu(sui, '小说', localMenu=[bomb], ximalayaTag='小说')
     home = Menu(sui, '主页', localMenu=[news, books, chinaHistory, story])
     
     sui.setHome(home)

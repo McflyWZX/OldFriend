@@ -99,11 +99,10 @@ class SoundAlbum(Item):
     def __init__(self, UI_mgr, title: str, ID:int, desc: str=""):
         super().__init__(UI_mgr, title)
         self.albumID = ID
+        self.xAlbum = XiMalayaAlbum(ID, UI_mgr.xAPI)
         self.lastPlayIndex = 0
         self.playAt = 0
-        # 此处不加载音频列表，在onEnter处加载
-        self.remoteContent = None
-        self.sounds = []
+        self.inBug = False
 
     def onSelect(self):
         super().onSelect()
@@ -111,40 +110,63 @@ class SoundAlbum(Item):
 
     def onEnter(self):
         super().onEnter()
-        self.remoteContent = self.UI_mgr.xAPI.getPlaylist(self.albumID)
-        if self.remoteContent is None or len(self.remoteContent) == 0:
-            self.UI_mgr.insAnnc('专辑加载失败，请稍后再试', needBlock=True)
-            print('专辑加载失败')
-            return -1
-        self.sounds = [SoundContent(self.UI_mgr, track.title, track.trackId, track.playUrl64) for track in self.remoteContent]
+        xTrackInfo = self.xAlbum.getByIndex(self.lastPlayIndex)
+        if xTrackInfo is None:
+            self.UI_mgr.insAnnc('第%d集信息加载失败，从第一集重新播放'%self.lastPlayIndex, needBlock=True)
+            print('第%d集信息加载失败，从第一集重新播放'%self.lastPlayIndex)
+            self.lastPlayIndex = 0
+            xTrackInfo = self.xAlbum.getByIndex(self.lastPlayIndex)
+            if xTrackInfo is None:
+                self.UI_mgr.insAnnc('第一集也加载失败', needBlock=True)
+                print('第一集也加载失败')
+                return -1
+        self.sound = SoundContent(self.UI_mgr, xTrackInfo.title, xTrackInfo.trackId, xTrackInfo.playUrl64)
         # 暂停主声音的播放，防止播报完还在加载时又播放主声音
         self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
-        self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
+        self.UI_mgr.insAnnc('共有%d集。'%self.xAlbum.totalCnt, needBlock=True)
+        self.sound.onSelect(needBlock=True)
         print('进入了：%s'%self.title)
         self.UI_mgr.setAlbum(self)
-        self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
+        self.UI_mgr.playSound(url=self.sound.playUrl)
 
     def onTrackPlayFinish(self):
         self.onGoNext()
 
     def onGoNext(self):
+        if self.lastPlayIndex >= self.xAlbum.totalCnt:
+            self.UI_mgr.insAnnc('当前为第%d集，是最后一集了'%self.lastPlayIndex)
+            self.UI_mgr.soundMgr.outterPause()
+            return
+        xTrackInfo = self.xAlbum.getByIndex(self.lastPlayIndex + 1)
+        if xTrackInfo is None:
+            self.UI_mgr.insAnnc('第%d集信息加载失败，已暂停'%self.lastPlayIndex, needBlock=True)
+            print('第%d集信息加载失败，已暂停'%self.lastPlayIndex)
+            return
+        # 确定能往前再加1
         self.lastPlayIndex += 1
-        self.lastPlayIndex %= len(self.sounds)
+        self.sound = SoundContent(self.UI_mgr, xTrackInfo.title, xTrackInfo.trackId, xTrackInfo.playUrl64)
         # 暂停主声音的播放，防止播报完还在加载时又播放主声音
         self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
-        self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
-        self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
+        self.sound.onSelect(needBlock=True)
+        self.UI_mgr.playSound(url=self.sound.playUrl)
 
     def onGoLast(self):
-        self.lastPlayIndex += (-1 + len(self.sounds))
-        self.lastPlayIndex %= len(self.sounds)
+        self.lastPlayIndex -= 1
+        if self.lastPlayIndex <= 0:
+            self.lastPlayIndex = 0
+        xTrackInfo = self.xAlbum.getByIndex(self.lastPlayIndex)
+        if xTrackInfo is None:
+            self.UI_mgr.insAnnc('第%d集信息加载失败，已暂停'%self.lastPlayIndex, needBlock=True)
+            print('第%d集信息加载失败，已暂停'%self.lastPlayIndex)
+            return
+        self.sound = SoundContent(self.UI_mgr, xTrackInfo.title, xTrackInfo.trackId, xTrackInfo.playUrl64)
         # 暂停主声音的播放，防止播报完还在加载时又播放主声音
         self.UI_mgr.soundMgr.outterPause()
         # 这里会播报音频的标题，需要阻塞住，防止播报和主声音同时播放
-        self.sounds[self.lastPlayIndex].onSelect(needBlock=True)
-        self.UI_mgr.playSound(url=self.sounds[self.lastPlayIndex].playUrl)
+        self.sound.onSelect(needBlock=True)
+        self.UI_mgr.playSound(url=self.sound.playUrl)
 
     def __eq__(self:'SoundAlbum', other:'SoundAlbum'):
         return isinstance(other, SoundAlbum) and self.albumID == other.albumID
@@ -161,7 +183,7 @@ class SoundContent(Item):
 
     def onSelect(self, needBlock=False):
         print('开始播放：%s'%self.title)
-        self.UI_mgr.insAnnc(self.title, needBlock)
+        self.UI_mgr.insAnnc('开始播放——' + self.title, needBlock)
 
     def onEnter(self):
         pass

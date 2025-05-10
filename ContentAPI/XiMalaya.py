@@ -11,30 +11,6 @@ import time
 import requests
 from urllib.parse import quote
 from enum import Enum
-
-    
-class XiMalayaTrackInfo:
-    def __init__(self, trackJson: dict):
-        self.title = trackJson['title']
-        self.trackId = trackJson['trackId']
-        self.trackRecordId = trackJson['trackRecordId']
-        self.playUrl64 = trackJson['playUrl64']
-        self.playUrl32 = trackJson['playUrl32']
-        self.isPaid = trackJson['isPaid']
-        self.isFree = trackJson['isFree']
-        self.createTime = datetime.datetime.fromtimestamp(trackJson['createdAt'] / 1000.0).strftime(f"%Y-%m-%d")
-    
-    def __str__(self):
-        res = '======title: ' + self.title + '======\r\n'
-        res += 'trackId: ' + str(self.trackId) + '\r\n'
-        res += 'playUrl64: ' + self.playUrl64 + '\r\n'
-        res += 'isPaid: ' + str(self.isPaid) + '\r\n'
-        res += 'isFree: ' + str(self.isFree) + '\r\n'
-        res += 'createTime: ' + self.createTime + '\r\n'
-        return res
-
-    def __repr__(self):
-        return str(self)
         
 class XiMalaya:
     def __init__(self):
@@ -61,23 +37,14 @@ class XiMalaya:
             nowTime = time.time()
         self.lastReqTime[opName] = nowTime
 
-    def _processTrackDict(self, result: dict):
-        trackJsons: dict = result['list']
-        if trackJsons is None or len(trackJsons) < 1:
-            return None
-        tracks = []
-        for trackJson in trackJsons:
-            tracks.append(XiMalayaTrackInfo(trackJson))
-        return tracks if len(tracks) > 0 else None
-
-        '''
+    '''
     description: 
     param {str} keyword: 搜索关键词
     param {int} page: 页码(默认为1)
     param {int} rows: 每页数量(默认为20)
     return {dict}: 解析后的JSON结果
     '''
-    def getPlaylist(self, albumId: int, page=1) -> list[XiMalayaTrackInfo]:
+    def getPlaylist(self, albumId: int, page=1) -> dict:
         # 基础URL
         base_url = "http://mobwsa.ximalaya.com/mobile/playlist/album/page"
         # 构建请求参数
@@ -108,7 +75,7 @@ class XiMalaya:
             response.raise_for_status()
             # 解析JSON
             # return self.__processAlbumsDict(response.json())
-            return self._processTrackDict(response.json())
+            return response.json()
             
         except requests.exceptions.HTTPError as e:
             print(f"HTTP错误: {e.response.status_code}")
@@ -257,7 +224,7 @@ class XiMalayaAlbumList:
         return albums if len(albums) > 0 else None
     
     '''
-    description: 处理搜索得到的json数据
+    description: 获取下一页内容，浏览时使用者屯着已经浏览过的内容，当需要更多内容时调用该函数
     param {int} page
     param {dict} result
     param {bool} vipOk
@@ -274,14 +241,107 @@ class XiMalayaAlbumList:
         self.albums.append(newPage)
         self.nowPage += 1
         return newPage
-
+    
+class XiMalayaTrackInfo:
+    def __init__(self, trackJson: dict, index: int=0):
+        self.title = trackJson['title']
+        self.trackId = trackJson['trackId']
+        self.trackRecordId = trackJson['trackRecordId']
+        self.playUrl64 = trackJson['playUrl64']
+        self.playUrl32 = trackJson['playUrl32']
+        self.isPaid = trackJson['isPaid']
+        self.isFree = trackJson['isFree']
+        self.index = index
+        self.createTime = datetime.datetime.fromtimestamp(trackJson['createdAt'] / 1000.0).strftime(f"%Y-%m-%d")
     
     def __str__(self):
-        res = '======keyword: ' + self.keyword + '======\r\n'
+        res = '======title: ' + self.title + '======\r\n'
+        res += 'index: ' + str(self.index) + '\r\n'
+        res += 'trackId: ' + str(self.trackId) + '\r\n'
+        res += 'playUrl64: ' + self.playUrl64 + '\r\n'
+        res += 'isPaid: ' + str(self.isPaid) + '\r\n'
+        res += 'isFree: ' + str(self.isFree) + '\r\n'
+        res += 'createTime: ' + self.createTime + '\r\n'
         return res
 
     def __repr__(self):
         return str(self)
+    
+'''
+description: 喜马拉雅专辑类，外部可以按index获取album信息
+'''
+class XiMalayaAlbum:
+    def __init__(self, albumID: int, xAPI: XiMalaya):
+        self.albumID = albumID
+        self.numsPerPage = 20
+        self.totalPage = -1
+        self.totalCnt = -1
+        self.xAPI = xAPI
+        # 用dict来管理页面，可以任意跳页
+        self.tracks: dict[int, list[XiMalayaTrackInfo]] = {}
+
+    '''
+    description: 处理搜索得到的json数据
+    param {int} page 页数
+    param {dict} result xAPI getPlayList得到的结果
+    return {*} None：获取失败
+    return {*} List：获取到的信息列表
+    '''
+    def _processTrackDict(self, page: int, result: dict):
+        if result is None:
+            print(f"喜马拉雅API声音列表返回None")
+            return []
+        self.totalPage: int = result.get('maxPageId', -1)
+        self.totalCnt: int = result.get('totalCount', -1)
+        if self.totalPage <= 0 or self.totalCnt <= 0:
+            print(f"喜马拉雅API搜索结果数据异常page:%d，cnt:%d"%(self.totalPage, self.totalCnt))
+            return []
+        trackJsons: dict = result.get('list', {})
+        if not trackJsons or len(trackJsons) < 1:
+            print(f"喜马拉雅API搜索计数正常但结果为空")
+            return []
+        tracks = []
+        index = self.numsPerPage * (page - 1)   # index从0开始，page从1开始
+        for trackJson in trackJsons:
+            tracks.append(XiMalayaTrackInfo(trackJson, index))
+            index += 1
+        return tracks if len(tracks) > 0 else []
+    
+    '''
+    description: 获取指定页内容
+    param {int} page 指定页数
+    return {*} None：获取失败
+    return {*} List：获取到的信息列表
+    '''    
+    def _getPage(self, pageId: int=0) -> list[XiMalayaAlbumInfo]:
+        # 如果该页存在且有内容，则直接返回
+        if pageId in self.tracks and len(self.tracks[pageId]) > 0:
+            return self.tracks[pageId]
+        print('即将在线获取track列表')
+        playListJson = self.xAPI.getPlaylist(self.albumID, pageId)
+        tracks = self._processTrackDict(pageId, playListJson)
+        print('track列表获取信息，页长度：%d、总数：%d、总页数：%d'%(len(tracks), self.totalCnt, self.totalPage))
+        if self.totalCnt <= 0 or self.totalPage <= 0 or len(tracks) <= 0:
+            return None
+        self.tracks[pageId] = tracks
+        return tracks
+    
+    '''
+    description: 获取指定index内容
+    param {int} page 指定index
+    return {*} None：获取失败
+    return {*} XiMalayaAlbumInfo：获取到的track信息
+    '''  
+    def getByIndex(self, trackIndex: int) -> XiMalayaTrackInfo:
+        pageId = int(trackIndex / self.numsPerPage) + 1
+        tracks = self._getPage(pageId)
+        if trackIndex >= self.totalCnt:
+            return None
+        tmpIndex = trackIndex % self.numsPerPage
+        if tmpIndex < len(tracks):
+            return tracks[tmpIndex]
+        else:
+            return None
 
 # 示例使用
 if __name__ == "__main__":
@@ -289,3 +349,8 @@ if __name__ == "__main__":
     print(xAlbums.getNextPage())
     print(xAlbums.getNextPage())
     print(xAlbums.getNextPage())
+    xAlbum = XiMalayaAlbum(51076156, XiMalaya())
+    for i in range(73, 78):
+        if i == 59:
+            pass
+        print(xAlbum.getByIndex(i))

@@ -10,6 +10,7 @@ Description: SUI(Sound user interface)，是纯声音用户交互的实现。
 '''
 from SoundManager import SoundManager
 from TTS_manager import TTS_manager
+import DiskUsageManager
 from typing import Callable
 import keyboard
 import copy
@@ -145,9 +146,12 @@ class SUI:
             if not os.path.isdir(path):
                 os.mkdir(path)
             path += '/' + url.split('/')[-1]
+            # 文件已存在，则直接加载
             if os.path.isfile(path):
                 self.soundMgr.playMainMusic(path)
                 return
+            # 下载文件之前先进行空间检查
+            DiskUsageManager.checkDiskUsageAndClean()
             # 下载文件，使用try except捕获异常，增强鲁棒性
             try:
                 request.urlretrieve(url, path)
